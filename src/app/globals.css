@@ -1,0 +1,138 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Base Resets and Defaults */
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 3.9%;
+  }
+
+  body {
+    @apply bg-white text-gray-900 antialiased;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-gray-100;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 rounded-full hover:bg-gray-400 transition-colors;
+}
+
+/* Premium Animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes shine {
+  to {
+    background-position: 200% center;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Custom Utilities */
+@layer utilities {
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600;
+    background-size: 200% auto;
+    animation: shine 8s linear infinite;
+  }
+
+  .float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+  }
+}
+
+/* Typography Enhancements */
+@layer base {
+  h1, h2, h3, h4, h5, h6 {
+    @apply tracking-tight;
+  }
+
+  p {
+    @apply leading-relaxed;
+  }
+}
+
+/* Premium Effects */
+.glass-effect {
+  @apply backdrop-blur-md bg-white/70 border border-white/20;
+}
+
+.premium-shadow {
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.04),
+              0 2px 4px rgb(0 0 0 / 0.04),
+              0 12px 24px rgb(0 0 0 / 0.08);
+}
+
+/* Smooth Transitions */
+.smooth-transition {
+  @apply transition-all duration-300 ease-in-out;
+}
+
+/* Focus States */
+.focus-ring {
+  @apply focus:outline-none focus:ring-2 focus:ring-black/20 focus:ring-offset-2;
+}
+
+/* Grid Background Pattern */
+.grid-pattern {
+  background-image: linear-gradient(to right, rgb(0 0 0 / 0.03) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgb(0 0 0 / 0.03) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* Loading States */
+.loading {
+  @apply animate-pulse bg-gray-200;
+}
+
+/* Selection Color */
+::selection {
+  @apply bg-black/10 text-black;
+}
+
+/* Custom Container Padding */
+.container-padding {
+  @apply px-4 md:px-6 lg:px-8;
+}
+
+/* Responsive Typography */
+@media (max-width: 640px) {
+  html {
+    font-size: 14px;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  html {
+    font-size: 15px;
+  }
+}
+
+@media (min-width: 1025px) {
+  html {
+    font-size: 16px;
+  }
+}
