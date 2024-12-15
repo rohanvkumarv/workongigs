@@ -146,7 +146,8 @@ import { Mail, Phone, MapPin, User, Sparkles } from 'lucide-react';
 
 const ContactPage = () => {
   return (
-    <div className="relative bg-white min-h-screen"> {/* Changed to white background */}
+    // <div className="relative bg-white min-h-screen"> {/* Changed to white background */}
+    <div className="w-full bg-white py-16 sm:py-20 md:py-24 relative overflow-hidden">
       {/* Premium Background Pattern */}
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#00000008_1px,transparent_1px),linear-gradient(to_bottom,#00000008_1px,transparent_1px)] bg-[size:24px_24px]" />
