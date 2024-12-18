@@ -196,6 +196,46 @@ const CustomButton = ({ href, children, variant = "primary" }) => (
 
 // ... Keep the CustomButton component the same ...
 
+// const FeatureStrip = () => {
+//   const features = [
+//     { label: 'Safe', icon: Shield, description: 'Our platform ensures secure transactions' },
+//     { label: 'Secure', icon: Lock, description: 'Advanced encryption and security measures' },
+//     { label: 'Reliable', icon: CheckCircle, description: 'Trusted platform with verified users' }
+//   ];
+
+//   return (
+//     <motion.div
+//       initial={{ opacity: 0, y: 20 }}
+//       animate={{ opacity: 1, y: 0 }}
+//       transition={{ duration: 0.5 }}
+//       className="max-w-3xl mx-auto bg-white rounded-2xl p-8 shadow-lg border border-gray-100
+//                 hover:shadow-xl transition-shadow duration-300"
+//     >
+//       <div className="flex justify-between items-center divide-x divide-gray-200">
+//         {features.map((feature, index) => {
+//           const Icon = feature.icon;
+//           return (
+//             <div key={index} className="flex-1 px-6 first:pl-0 last:pr-0 text-center group">
+//               <div className="flex flex-col items-center gap-3">
+//                 <div className="w-12 h-12 rounded-xl bg-black/5 flex items-center justify-center
+//                             group-hover:bg-black group-hover:text-white transition-colors duration-300">
+//                   <Icon className="w-6 h-6" />
+//                 </div>
+//                 <h3 className="text-lg font-semibold text-gray-900">
+//                   {feature.label}
+//                 </h3>
+//                 <p className="text-sm text-gray-600">
+//                   {feature.description}
+//                 </p>
+//               </div>
+//             </div>
+//           );
+//         })}
+//       </div>
+//     </motion.div>
+//   );
+// };
+
 const FeatureStrip = () => {
   const features = [
     { label: 'Safe', icon: Shield, description: 'Our platform ensures secure transactions' },
@@ -208,14 +248,17 @@ const FeatureStrip = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="max-w-3xl mx-auto bg-white rounded-2xl p-8 shadow-lg border border-gray-100
+      className="max-w-3xl mx-auto bg-white rounded-2xl p-4 md:p-8 shadow-lg border border-gray-100
                 hover:shadow-xl transition-shadow duration-300"
     >
-      <div className="flex justify-between items-center divide-x divide-gray-200">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center md:divide-x divide-gray-200 gap-8 md:gap-0">
         {features.map((feature, index) => {
           const Icon = feature.icon;
           return (
-            <div key={index} className="flex-1 px-6 first:pl-0 last:pr-0 text-center group">
+            <div 
+              key={index} 
+              className="flex-1 md:px-6 first:md:pl-0 last:md:pr-0 text-center group border-b md:border-b-0 last:border-b-0 pb-8 md:pb-0 last:pb-0"
+            >
               <div className="flex flex-col items-center gap-3">
                 <div className="w-12 h-12 rounded-xl bg-black/5 flex items-center justify-center
                             group-hover:bg-black group-hover:text-white transition-colors duration-300">
@@ -224,7 +267,7 @@ const FeatureStrip = () => {
                 <h3 className="text-lg font-semibold text-gray-900">
                   {feature.label}
                 </h3>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-600 max-w-xs mx-auto">
                   {feature.description}
                 </p>
               </div>

@@ -1,0 +1,95 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Freelancer {
+  id         String      @id @default(cuid())
+
+  
+
+  name       String?
+  username   String?   @unique
+  email      String  @unique
+  password   String
+  mobile     Int?
+  city       String?
+  country    String?
+  pincode    String?
+  profession String?
+
+  projects   Project[] @relation("FreelancerProjects")
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Project {
+  id           String        @id @default(cuid())
+
+  name         String
+  modeOfPay    String
+  status        String
+
+  instances    Instance[] @relation("ProjectInstances")
+
+  freelancerId String
+  freelancer   Freelancer @relation("FreelancerProjects", fields: [freelancerId], references: [id])
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Instance {
+  id         String      @id @default(cuid())
+
+
+  name       String
+  desc       String
+  cost       Float
+  PaymentStatus  String
+
+  files      File[]   @relation("InstanceFiles")
+
+  projectId  String
+  project    Project  @relation("ProjectInstances", fields: [projectId], references: [id])
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model File {
+  id         String      @id @default(cuid())
+
+
+  name       String
+  url        String
+
+  instanceId String
+  instance   Instance @relation("InstanceFiles", fields: [instanceId], references: [id])
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model PasswordReset {
+  id              String   @id @default(cuid())
+  userId          String      // Foreign key to Freelancer
+  token           String   // Reset token
+  tokenExpiration DateTime // Token expiration time
+  createdAt       DateTime @default(now()) // When the reset request was created
+
+  @@unique([token])  // Ensure token is unique
+}
+
+
+model OtpVerification {
+  email     String   @id
+  otp       String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
