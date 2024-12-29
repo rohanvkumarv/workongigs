@@ -32,8 +32,9 @@ const Navbar = () => {
     { label: 'Contact', href: '/contact' },
     { label: 'Login', href: '/auth/freelancer/login' },
   ];
-
-  const freelancerId = localStorage.getItem('freelancerId');
+  useEffect(() => {
+    const freelancerId = localStorage.getItem('freelancerId');
+  }, []);
 
   return (
     <div className="w-full fixed top-6 left-0 right-0 px-4 z-50">
