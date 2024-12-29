@@ -77,7 +77,7 @@ export async function POST(request) {
     const { email } = await request.json();
 
     // Find user
-    const user = await prisma.freelancer.findUnique({
+    const user = await db.freelancer.findUnique({
       where: { email },
     });
 
