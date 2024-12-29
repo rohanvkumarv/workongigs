@@ -320,12 +320,59 @@ const AddNewProject = () => {
   //     throw error;
   //   }
   // };
-  const uploadFile = async (file) => {
-    const formData = new FormData();
-    formData.append("file", file);
+  // const uploadFile = async (file) => {
+  //   const formData = new FormData();
+  //   formData.append("file", file);
   
+  //   try {
+  //     // Fetch with streaming progress
+  //     const response = await fetch("/api/upload", {
+  //       method: "POST",
+  //       body: formData,
+  //     });
+  
+  //     const reader = response.body.getReader();
+  //     const decoder = new TextDecoder();
+  
+  //     while (true) {
+  //       const { done, value } = await reader.read();
+  //       if (done) break;
+  
+  //       const chunk = decoder.decode(value);
+  //       const lines = chunk.split("\n");
+  
+  //       for (const line of lines) {
+  //         if (line.startsWith("data: ")) {
+  //           const data = JSON.parse(line.slice(5));
+  
+  //           if (data.error) {
+  //             throw new Error(data.error);
+  //           }
+  
+  //           if (data.url) {
+  //             // Upload complete, return the URL
+  //             return data.url;
+  //           }
+  
+  //           // Update progress
+  //           setUploadProgress((prev) => ({
+  //             ...prev,
+  //             [file.name]: data.percentage,
+  //           }));
+  //         }
+  //       }
+  //     }
+  //   } catch (error) {
+  //     console.error(`Error uploading ${file.name}:`, error);
+  //     throw error;
+  //   }
+  // };
+  const uploadFile = async (file) => {
     try {
-      // Fetch with streaming progress
+      // First get the presigned URL
+      const formData = new FormData();
+      formData.append("file", file);
+      
       const response = await fetch("/api/upload", {
         method: "POST",
         body: formData,
@@ -349,16 +396,40 @@ const AddNewProject = () => {
               throw new Error(data.error);
             }
   
-            if (data.url) {
-              // Upload complete, return the URL
-              return data.url;
-            }
+            if (data.presignedUrl) {
+              // Upload the file to S3 using the presigned URL
+              const xhr = new XMLHttpRequest();
+              xhr.open("PUT", data.presignedUrl);
+              xhr.setRequestHeader("Content-Type", file.type);
   
-            // Update progress
-            setUploadProgress((prev) => ({
-              ...prev,
-              [file.name]: data.percentage,
-            }));
+              // Track upload progress
+              xhr.upload.onprogress = (event) => {
+                if (event.lengthComputable) {
+                  const percentage = Math.round(
+                    (event.loaded / event.total) * 100
+                  );
+                  setUploadProgress((prev) => ({
+                    ...prev,
+                    [file.name]: percentage,
+                  }));
+                }
+              };
+  
+              // Create a promise to handle the upload
+              await new Promise((resolve, reject) => {
+                xhr.onload = () => {
+                  if (xhr.status === 200) {
+                    resolve(data.finalUrl);
+                  } else {
+                    reject(new Error("Upload failed"));
+                  }
+                };
+                xhr.onerror = () => reject(new Error("Upload failed"));
+                xhr.send(file);
+              });
+  
+              return data.finalUrl;
+            }
           }
         }
       }
@@ -367,7 +438,6 @@ const AddNewProject = () => {
       throw error;
     }
   };
-  
 
   const handleFileChange = async (e) => {
     const newFiles = Array.from(e.target.files);
