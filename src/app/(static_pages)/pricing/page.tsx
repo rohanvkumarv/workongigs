@@ -103,7 +103,7 @@ const Pricing = () => {
               </div>
 
               {/* Future Pricing */}
-              <div>
+              {/* <div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-6">Upcoming Pricing Models</h3>
                 <div className="grid sm:grid-cols-2 gap-6">
                   <div className="p-6 rounded-2xl border border-gray-200 hover:border-black 
@@ -117,7 +117,7 @@ const Pricing = () => {
                     <p className="text-gray-600">Pay a small percentage of the total product price per transaction</p>
                   </div>
                 </div>
-              </div>
+              </div> */}
 
               {/* Support Section */}
               <div className="bg-black/5 rounded-2xl p-6">
@@ -130,14 +130,14 @@ const Pricing = () => {
                      className="text-gray-900 hover:text-black transition-colors block">
                     support@workongigs.com
                   </a>
-                  <p className="text-gray-900">+917477211211</p>
+                  {/* <p className="text-gray-900">+917477211211</p> */}
                 </div>
               </div>
 
               {/* CTA */}
               <div className="text-center pt-6">
                 <motion.a
-                  href="/sign-up"
+                  href="/auth/freelaner/login"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   className="inline-flex items-center gap-2 px-8 py-4 bg-black text-white 

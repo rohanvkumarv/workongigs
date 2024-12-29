@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { Upload, X, Plus, User, FolderPlus, Home, LogOut, Menu } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
-
+import Alert from '@/components/Alert';
 const Sidebar = () => {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
@@ -20,6 +20,7 @@ const Sidebar = () => {
     { icon: Plus, label: 'Add New', href: `/freelancer/${freelancerId}/add_new`},
     { icon: User, label: 'Profile', href: `/freelancer/${freelancerId}/profile` }
   ];
+
 
   const NavLink = ({ item, onClick }) => {
     const Icon = item.icon;
@@ -40,8 +41,38 @@ const Sidebar = () => {
     );
   };
 
+ 
+  const [alert, setAlert] = useState({
+    show: false,
+    message: '',
+    type: 'success'
+  });
+
+  const handleLogout = async () => {
+   
+        // Clear auth data
+        localStorage.removeItem("freelancerId");
+        
+        // Show success alert
+        setAlert({
+          show: true,
+          message: "Logged out successfully",
+          type: "success"
+        });
+        router.push('/auth/freelancer/login');
+  
+      
+  };
+
   return (
     <>
+     {alert.show && (
+        <Alert
+          message={alert.message}
+          type={alert.type}
+          onClose={() => setAlert({ ...alert, show: false })}
+        />
+      )}
       {/* Mobile Navbar - Highest z-index */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-[9999]">
         <div className="relative bg-white border-b border-gray-100 shadow-sm">
@@ -148,10 +179,12 @@ const Sidebar = () => {
               whileTap={{ scale: 0.98 }}
               className="w-full flex items-center gap-3 px-4 py-3 text-gray-600 
                        hover:text-red-600 transition-colors rounded-xl hover:bg-red-50 group"
-              onClick={() => {
-                // Add your logout logic here
-                router.push("/auth/freelancer/login")
-              }}
+              // onClick={() => {
+                
+              //   // Add your logout logic here
+              //   router.push("/auth/freelancer/login")
+              // }}
+              onClick={handleLogout}
             >
               <LogOut className="w-5 h-5" />
               <span className="font-medium">Logout</span>

@@ -635,12 +635,12 @@ const TermsAndConditions = () => {
                       contact@workongigs.com
                     </a>
                   </p>
-                  <p className="text-gray-700">
+                  {/* <p className="text-gray-700">
                     <span className="font-semibold">Phone:</span> +917477211211
-                  </p>
-                  <p className="text-gray-700">
+                  </p> */}
+                  {/* <p className="text-gray-700">
                     <span className="font-semibold">Address:</span> Vill Post Ajgaraha Rewa Madhya Pradesh
-                  </p>
+                  </p> */}
                 </div>
               </div>
 

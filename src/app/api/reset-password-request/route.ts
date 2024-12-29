@@ -108,7 +108,7 @@ export async function POST(request) {
     });
 
     // Send reset email
-    const resetUrl = `https:3000/workongigs.com/freelancer/reset-password/${resetToken}`;
+    const resetUrl = `https://workongigs.com/auth/freelancer/reset-password/${resetToken}`;
     
     await transporter.sendMail({
       from: process.env.EMAIL_USER,

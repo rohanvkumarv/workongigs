@@ -16,7 +16,7 @@ const CustomButton = ({ children, className = "", ...props }) => (
 
 const CTA = () => {
   return (
-    <div className="w-full bg-white py-24 relative overflow-hidden">
+    <div className="w-full bg-white py-24 relative overflow-hidden" >
       {/* Background Pattern */}
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#00000008_1px,transparent_1px),linear-gradient(to_bottom,#00000008_1px,transparent_1px)] bg-[size:24px_24px]" />

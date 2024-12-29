@@ -1,127 +1,6 @@
 "use client"
 
 
-// import React from 'react';
-// import { motion } from 'framer-motion';
-// import { Mail, Phone, MapPin, Sparkles } from 'lucide-react';
-
-// const RefundPolicy = () => {
-//   return (
-//     <div className="relative bg-white min-h-screen">
-//       {/* Premium Background Pattern */}
-//       <div className="absolute inset-0">
-//         <div className="absolute inset-0 bg-[linear-gradient(to_right,#00000008_1px,transparent_1px),linear-gradient(to_bottom,#00000008_1px,transparent_1px)] bg-[size:24px_24px]" />
-//         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/[0.02] to-transparent" />
-//       </div>
-
-//       {/* Content Container */}
-//       <div className="relative pt-32 px-4 sm:px-6 lg:px-8">
-//         {/* Header Section */}
-//         <motion.div
-//           initial={{ opacity: 0, y: 20 }}
-//           animate={{ opacity: 1, y: 0 }}
-//           transition={{ duration: 0.6 }}
-//           className="text-center mb-12"
-//         >
-//           <div className="inline-flex items-center justify-center gap-2 text-sm font-medium 
-//                        bg-black/5 text-black/80 px-4 py-2 rounded-full mb-4">
-//             <Sparkles className="w-4 h-4" />
-//             REFUND POLICY
-//             <Sparkles className="w-4 h-4" />
-//           </div>
-//           <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-//             Refund Policy
-//           </h1>
-//           <p className="text-sm text-gray-600">Effective Date: September 9, 2024</p>
-//         </motion.div>
-
-//         {/* Main Policy Card */}
-//         <motion.div
-//           initial={{ opacity: 0, y: 20 }}
-//           animate={{ opacity: 1, y: 0 }}
-//           transition={{ duration: 0.6, delay: 0.2 }}
-//           className="max-w-3xl mx-auto"
-//         >
-//           <div className="relative bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] 
-//                        border border-gray-100 overflow-hidden p-8 sm:p-12">
-//             {/* Premium Corner Gradients */}
-//             <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-black/5 to-transparent" />
-//             <div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-to-tr from-black/5 to-transparent" />
-
-//             {/* Content */}
-//             <div className="relative space-y-8">
-//               <h2 className="text-2xl font-bold text-gray-900 mb-6 border-b-2 border-gray-300 pb-2">
-//                 Overview
-//               </h2>
-//               <p className="text-gray-700 leading-relaxed">
-//                 At WorkOnGigs, we are committed to ensuring a positive experience for both our clients and freelancers. This Refund Policy outlines the conditions under which refunds may be issued to clients using our platform.
-//               </p>
-
-//               {/* Policy Sections */}
-//               {renderSection("1. General Conditions", [
-//                 "Refunds may be considered under the following conditions:",
-//                 "Non-Delivery of Service: If the freelancer fails to deliver the agreed-upon service within the specified deadline without prior mutual agreement with the client.",
-//                 "Service Not as Described: If the delivered service does not meet the description or requirements as agreed upon in the project contract.",
-//                 "Mutual Agreement: If both the client and the freelancer mutually agree to cancel the project and request a refund.",
-//               ])}
-
-//               <hr className="border-gray-200 my-8" />
-
-//               {renderSection("2. Eligibility for Refunds", [
-//                 "Request Timeline: Refund requests must be submitted within 3 days of the project's scheduled completion date.",
-//                 "Evidence: The client must provide evidence supporting their claim (e.g., screenshots, communication logs, or other relevant documents).",
-//                 "Attempts to Resolve: Both parties must make a reasonable effort to resolve the issue before requesting a refund.",
-//               ])}
-
-//               <hr className="border-gray-200 my-8" />
-
-//               {renderSection("3. Refund Process", [
-//                 "Submission: To request a refund, clients must contact our support team at contact@workongigs.com with the project details and the reason for the refund request.",
-//                 "Review: Our team will review the request and any supporting evidence within 3 business days.",
-//                 "Resolution: We will work with both the client and the freelancer to reach a fair resolution. If the refund request is approved, the client will receive a full or partial refund, depending on the circumstances.",
-//               ])}
-
-//               <hr className="border-gray-200 my-8" />
-
-//               {renderSection("4. Non-Refundable Situations", [
-//                 "Change of Mind: If the client changes their mind after the service has been delivered as per the agreed contract.",
-//                 "Client Delays: If the client fails to provide necessary information or approvals, causing delays or incomplete delivery.",
-//                 "Partial Completion: If the service has been partially delivered and accepted by the client, refunds will only be issued for the incomplete portion of the work.",
-//                 "Disputes: If there is an ongoing dispute that has not yet been resolved through our dispute resolution process.",
-//               ])}
-
-//               <hr className="border-gray-200 my-8" />
-
-//               {renderSection("5. Dispute Resolution", [
-//                 "If a refund request is denied or if the client and freelancer cannot agree on a resolution, the issue may be escalated to our dispute resolution team. Both parties will be required to provide supporting evidence, and our decision will be final and binding.",
-//               ])}
-
-//               <h2 className="text-2xl font-bold text-gray-900 mb-4 border-t-2 border-gray-300 pt-6">Contact Information</h2>
-//               <ul className="list-disc pl-6 text-gray-700 space-y-2">
-//                 <li>By email: <a href="mailto:contact@workongigs.com" className="text-blue-600 hover:underline">contact@workongigs.com</a></li>
-//                 <li>By phone: +917477211211</li>
-//                 <li>Address: Vill Post Ajgaraha Rewa Madhya Pradesh</li>
-//               </ul>
-//             </div>
-//           </div>
-//         </motion.div>
-//       </div>
-//     </div>
-//   );
-// };
-
-// const renderSection = (title, content) => (
-//   <div>
-//     <h3 className="text-xl font-semibold text-gray-900 mb-4 border-l-4 border-gray-500 pl-3">{title}</h3>
-//     <ul className="list-disc pl-6 text-gray-700 space-y-2">
-//       {content.map((item, index) => (
-//         <li key={index}>{item}</li>
-//       ))}
-//     </ul>
-//   </div>
-// );
-
-// export default RefundPolicy;
 import React from 'react';
 import { motion } from 'framer-motion';
 import { 
@@ -317,7 +196,7 @@ const RefundPolicy = () => {
                     </div>
                     <div>
                       <p className="text-sm text-gray-500">Phone</p>
-                      <a href="tel:+917477211211" 
+                      <a href="tel:" 
                          className="text-gray-900 hover:text-gray-600 transition-colors">
                         +91 7477211211
                       </a>
@@ -345,7 +224,7 @@ const RefundPolicy = () => {
                      className="text-gray-900 hover:text-black transition-colors block">
                     support@workongigs.com
                   </a>
-                  <p className="text-gray-900">+917477211211</p>
+                  {/* <p className="text-gray-900">+917477211211</p> */}
                 </div>
               </div>
               

@@ -226,7 +226,7 @@ const UserLoginPage = () => {
       if (response.ok) {
         showAlert("success", "Success", "Login successful! Redirecting...");
         if (data.user?.id) {
-          localStorage.setItem("userId", data.user.id);
+          localStorage.setItem("freelancerId", data.user.id);
           router.push(`/freelancer/${data.user.id}/dashboard`);
         }
       } else {

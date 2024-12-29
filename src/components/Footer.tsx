@@ -23,11 +23,11 @@ const Footer = () => {
       { label: 'YouTube', href: '#', icon: Youtube }
     ],
     legal: [
-      { label: 'Terms of Use', href: '/terms' },
-      { label: 'Privacy Policy', href: '/policy' },
-      { label: 'Refund Policy', href: '/refund' },
+      { label: 'Terms of Use', href: '/terms_and_conditions' },
+      { label: 'Privacy Policy', href: '/privacy_policy' },
+      { label: 'Refund Policy', href: '/refund_policy' },
       { label: 'Pricing', href: '/pricing' },
-      { label: 'About Us', href: '/about-us' }
+      { label: 'About Us', href: '/about' }
     ]
   };
 
@@ -52,7 +52,7 @@ const Footer = () => {
               {/* Logo */}
               <div className="flex items-center gap-2">
                 <div className="h-10 w-10 bg-black rounded-xl flex items-center justify-center">
-                  <span className="text-white text-xl font-bold">R</span>
+                  <span className="text-white text-xl font-bold">W</span>
                 </div>
               </div>
 
@@ -156,10 +156,10 @@ const Footer = () => {
               © {new Date().getFullYear()} All rights reserved.
             </p>
             <div className="flex items-center gap-4">
-              <a href="mailto:contact@example.com" className="text-gray-600 hover:text-black transition-colors">
+              <a href="mailto:support@workongigs.com" className="text-gray-600 hover:text-black transition-colors">
                 <Mail className="w-5 h-5" />
               </a>
-              <a href="tel:+1234567890" className="text-gray-600 hover:text-black transition-colors">
+              <a href="tel:+917477211211" className="text-gray-600 hover:text-black transition-colors">
                 <Phone className="w-5 h-5" />
               </a>
             </div>

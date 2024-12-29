@@ -80,7 +80,7 @@ const Benefits = () => {
 
       <div className="max-w-7xl mx-auto px-4 py-20 relative">
         {/* Freelancer Benefits Section */}
-        <div className="flex flex-col lg:flex-row gap-12 lg:gap-20 mb-32">
+        <div className="flex flex-col lg:flex-row gap-12 lg:gap-20 mb-32" id='lancers'>
           {/* Content */}
           <motion.div 
             initial={{ opacity: 0, x: -20 }}
@@ -101,7 +101,7 @@ const Benefits = () => {
               </p>
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-6"  >
               {freelancerBenefits.map((benefit, index) => (
                 <BenefitCard
                   key={index}
@@ -134,7 +134,7 @@ const Benefits = () => {
         </div>
 
         {/* Client Benefits Section */}
-        <div className="flex flex-col-reverse lg:flex-row gap-12 lg:gap-20">
+        <div className="flex flex-col-reverse lg:flex-row gap-12 lg:gap-20" id='clients' >
           {/* Animation */}
           <motion.div 
             initial={{ opacity: 0, x: -20 }}
