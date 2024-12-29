@@ -1,6 +1,6 @@
 "use client"
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Sparkles, Building2, Users, Target, Zap } from 'lucide-react';
 
@@ -9,6 +9,17 @@ const Divider = () => (
 );
 
 const AboutUs = () => {
+
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) {
+    return null; // or a loading state
+  }
+
   return (
     <div className="w-full bg-white py-16 sm:py-20 md:py-24 relative overflow-hidden">
       {/* Background Pattern */}
