@@ -397,6 +397,7 @@ const ProjectDetailsPage = () => {
   
   const params = useParams();
   const projectId = params.id;
+  const freelancerId =localStorage.getItem('freelancerId');
 
   const [formData, setFormData] = useState({
     desc: '',
@@ -539,7 +540,7 @@ const ProjectDetailsPage = () => {
                     {project.status}
                   </span>
                   <Link 
-                    href={`/preview/${projectId}`}
+                    href={`/freelancer/${freelancerId}/projects/${projectId}/preview`}
                     className="bg-black text-white px-2 py-0.5 rounded-md text-xs font-medium hover:bg-gray-800 transition-colors"
                   >
                     Open Preview
@@ -597,7 +598,7 @@ const ProjectDetailsPage = () => {
                   </div>
                   <div className="flex justify-end mt-2">
                     <Link 
-                      href={`/preview/${projectId}`}
+                      href={`/freelancer/${freelancerId}/projects/${projectId}/preview`}
                       className="text-sm text-gray-600 hover:text-gray-900 transition-colors flex items-center gap-1"
                     >
                       <Eye className="w-4 h-4" />
@@ -644,12 +645,12 @@ const ProjectDetailsPage = () => {
                       ₹{file.cost.toLocaleString()}
                     </div>
                     <div className="flex items-center justify-end">
-                      <Link 
+                      {/* <Link 
                         href={`/preview/${projectId}`}
                         className="p-2 hover:bg-gray-100 rounded-lg transition-all group"
                       >
                         <Eye className="w-4 h-4 text-gray-600 group-hover:text-gray-900" />
-                      </Link>
+                      </Link> */}
                     </div>
                   </div>
                 </div>

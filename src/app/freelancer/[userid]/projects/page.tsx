@@ -9,8 +9,29 @@ const ProjectsPage = () => {
   // const params = useParams();
   // const freelancerId = params.userid;
 
-  const freelancerId=localStorage.getItem("freelancerId");
-  console.log(freelancerId)
+  // useEffect(() => {
+  //   const freelancerId = localStorage.getItem("freelancerId");
+  //   console.log(freelancerId);
+  //   if (freelancerId) {
+  //     fetchProjects();
+  //   }
+  // }, []);
+
+  const [freelancerId, setFreelancerId] = useState(null); 
+
+  useEffect(() => {
+    const id = localStorage.getItem("freelancerId");
+    console.log("FreelancerId from localStorage:", id);
+    
+    if (id) {
+      setFreelancerId(id);  // Store in state
+      console.log("About to fetch projects");
+      fetchProjects(id);  // Pass the id directly to fetchProjects
+    } else {
+      console.log("No freelancerId found in localStorage");
+    }
+  }, []);
+
 
   const [allProjects, setAllProjects] = useState([]);
   const [filteredProjects, setFilteredProjects] = useState([]);
@@ -25,17 +46,33 @@ const ProjectsPage = () => {
     { id: 'completed', label: 'Completed' },
     { id: 'pending', label: 'Pending' }
   ];
-  useEffect(() => {
-        if (freelancerId) {
-          fetchProjects();
-        }
-      }, [freelancerId]);
+
     
       useEffect(() => {
         filterProjects();
       }, [searchTerm, activeFilter, allProjects]);
     
-      const fetchProjects = async () => {
+      // const fetchProjects = async () => {
+      //   try {
+      //     setIsLoading(true);
+      //     const response = await fetch('/api/get-freelancer-projects', {
+      //       method: 'POST',
+      //       headers: {
+      //         'Content-Type': 'application/json'
+      //       },
+      //       body: JSON.stringify({ freelancerId })
+      //     });
+      //     const data = await response.json();
+      //     if (!response.ok) throw new Error(data.error);
+      //     setAllProjects(data);
+      //     setFilteredProjects(data);
+      //   } catch (error) {
+      //     console.error('Error fetching projects:', error);
+      //   } finally {
+      //     setIsLoading(false);
+      //   }
+      // };
+      const fetchProjects = async (id) => {  // Accept id as parameter
         try {
           setIsLoading(true);
           const response = await fetch('/api/get-freelancer-projects', {
@@ -43,7 +80,7 @@ const ProjectsPage = () => {
             headers: {
               'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ freelancerId })
+            body: JSON.stringify({ freelancerId: id })  // Use the passed id
           });
           const data = await response.json();
           if (!response.ok) throw new Error(data.error);
@@ -55,7 +92,6 @@ const ProjectsPage = () => {
           setIsLoading(false);
         }
       };
-    
       const filterProjects = () => {
         let filtered = [...allProjects];
     

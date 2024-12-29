@@ -6,38 +6,101 @@ import { Upload, X, Info, Hash, Download } from 'lucide-react';
 import { useRouter, useParams } from 'next/navigation';
 
 // File Preview Component
-const FilePreview = ({ file, onRemove, fileUrl }) => (
-  <div className="flex items-center justify-between p-3 bg-white rounded-lg shadow-sm border border-gray-100">
-    <div className="flex items-center gap-3 flex-1 min-w-0">
-      <div className="w-8 h-8 rounded-lg bg-black/5 flex items-center justify-center flex-shrink-0">
-        <Upload className="w-4 h-4 text-gray-600" />
+// const FilePreview = ({ file, onRemove, fileUrl }) => (
+//   <div className="flex items-center justify-between p-3 bg-white rounded-lg shadow-sm border border-gray-100">
+//     <div className="flex items-center gap-3 flex-1 min-w-0">
+//       <div className="w-8 h-8 rounded-lg bg-black/5 flex items-center justify-center flex-shrink-0">
+//         <Upload className="w-4 h-4 text-gray-600" />
+//       </div>
+//       <div className="flex-1 min-w-0">
+//         <p className="text-sm font-medium text-gray-900 truncate">{file.name}</p>
+//         <p className="text-xs text-gray-500">{(file.size / 1024).toFixed(1)} KB</p>
+//       </div>
+//     </div>
+//     <div className="flex items-center gap-2">
+//       {fileUrl && (
+//         <a
+//           href={fileUrl}
+//           download
+//           className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+//           onClick={(e) => {
+//             e.stopPropagation();
+//             // Handle download logic here
+//           }}
+//         >
+//           <Download className="w-4 h-4 text-gray-500" />
+//         </a>
+//       )}
+//       <button
+//         onClick={onRemove}
+//         className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+//       >
+//         <X className="w-4 h-4 text-gray-500" />
+//       </button>
+//     </div>
+//   </div>
+// );
+
+const FilePreview = ({ file, onRemove, uploadProgress, fileUrl }) => (
+  <div className="flex flex-col p-3 bg-white rounded-lg shadow-sm border border-gray-100">
+    <div className="flex items-center justify-between mb-2">
+      <div className="flex items-center gap-3 flex-1 min-w-0">
+        <div className="w-8 h-8 rounded-lg bg-black/5 flex items-center justify-center flex-shrink-0">
+          <Upload className="w-4 h-4 text-gray-600" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium text-gray-900 truncate">{file.name}</p>
+          <p className="text-xs text-gray-500">{(file.size / 1024).toFixed(1)} KB</p>
+        </div>
       </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-gray-900 truncate">{file.name}</p>
-        <p className="text-xs text-gray-500">{(file.size / 1024).toFixed(1)} KB</p>
-      </div>
-    </div>
-    <div className="flex items-center gap-2">
-      {fileUrl && (
-        <a
-          href={fileUrl}
-          download
+      <div className="flex items-center gap-2">
+        {fileUrl && (
+          <a
+            href={fileUrl}
+            download
+            className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Download className="w-4 h-4 text-gray-500" />
+          </a>
+        )}
+        <button
+          onClick={onRemove}
           className="p-1 hover:bg-gray-100 rounded-full transition-colors"
-          onClick={(e) => {
-            e.stopPropagation();
-            // Handle download logic here
-          }}
         >
-          <Download className="w-4 h-4 text-gray-500" />
-        </a>
-      )}
-      <button
-        onClick={onRemove}
-        className="p-1 hover:bg-gray-100 rounded-full transition-colors"
-      >
-        <X className="w-4 h-4 text-gray-500" />
-      </button>
+          <X className="w-4 h-4 text-gray-500" />
+        </button>
+      </div>
     </div>
+
+
+    {uploadProgress !== undefined ? (
+      <div className="w-full bg-gray-200 rounded-full h-1.5 mt-2">
+        <div
+          className="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
+          style={{ width: `${uploadProgress}%` }}
+        />
+      </div>
+    ) : (
+      <div className="text-xs text-gray-500 mt-2">Starting upload...</div>
+    )}
+
+    
+    {/* Progress Bar */}
+    {/* {uploadProgress !== undefined && uploadProgress < 100 && (
+      <div className="w-full bg-gray-200 rounded-full h-1.5 mt-2">
+        <div 
+          className="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
+          style={{ width: `${uploadProgress}%` }}
+        />
+      </div>
+    )} */}
+    {uploadProgress === 100 && !fileUrl && (
+      <div className="text-xs text-blue-600 mt-1">Processing...</div>
+    )}
+    {fileUrl && (
+      <div className="text-xs text-green-600 mt-1">Upload complete</div>
+    )}
   </div>
 );
 
@@ -53,20 +116,28 @@ const AddNewProject = () => {
     projectCount: '',
     description: ''
   });
-  
+
+
+// new  
+  const [uploadedFiles, setUploadedFiles] = useState([]);
+  const [uploadProgress, setUploadProgress] = useState({});
+  const [isUploading, setIsUploading] = useState(false);
+  // new ends 
+
+
   const params = useParams();
   // const freelancerId = params.userid;
   const freelancerId=localStorage.getItem("freelancerId");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleFileChange = (e) => {
-    const newFiles = Array.from(e.target.files);
-    setFiles(prev => [...prev, ...newFiles]);
-  };
+  // const handleFileChange = (e) => {
+  //   const newFiles = Array.from(e.target.files);
+  //   setFiles(prev => [...prev, ...newFiles]);
+  // };
 
-  const removeFile = (index) => {
-    setFiles(prev => prev.filter((_, i) => i !== index));
-  };
+  // const removeFile = (index) => {
+  //   setFiles(prev => prev.filter((_, i) => i !== index));
+  // };
 
   const handleDrop = (e) => {
     e.preventDefault();
@@ -78,46 +149,287 @@ const AddNewProject = () => {
     { code: 'INR', symbol: '₹' },
   ];
 
+  // const handleSubmit = async () => {
+  //   try {
+  //     setIsSubmitting(true);
+  
+  //     if (!formData.projectName || !formData.cost || !formData.paymentMode || !files.length) {
+  //       alert('Please fill in all required fields and upload at least one file');
+  //       return;
+  //     }
+  
+  //     const formDataToSend = new FormData();
+  
+  //     files.forEach((file) => {
+  //       formDataToSend.append('files', file);
+  //     });
+  
+  //     formDataToSend.append('projectName', formData.projectName);
+  //     formDataToSend.append('cost', formData.cost.toString());
+  //     formDataToSend.append('currency', formData.currency);
+  //     formDataToSend.append('paymentMode', formData.paymentMode);
+  //     formDataToSend.append('description', formData.description || '');
+  //     formDataToSend.append('freelancerId', freelancerId);
+      
+  //     if (formData.projectCount) {
+  //       formDataToSend.append('projectCount', formData.projectCount.toString());
+  //     }
+  
+  //     const response = await fetch('/api/create-project', {
+  //       method: 'POST',
+  //       body: formDataToSend,
+  //     });
+  
+  //     const result = await response.json();
+  
+  //     if (response.ok && result.success && result.projectId) {
+  //       router.push(`/freelancer/${freelancerId}/projects/${result.projectId}/preview`);
+  //     } else {
+  //       throw new Error(result.error || 'Unexpected API response structure');
+  //     }
+  //   } catch (error) {
+  //     console.error('Error creating project:', error.message || error);
+  //     alert(`Failed to create project. Please try again. Error: ${error.message || 'Unknown error'}`);
+  //   } finally {
+  //     setIsSubmitting(false);
+  //   }
+  // };
+
+// new ones 
+  
+  // const uploadFile = async (file) => {
+  //   const formData = new FormData();
+  //   formData.append('file', file);
+
+  //   try {
+  //     const response = await fetch('/api/upload', {
+  //       method: 'POST',
+  //       body: formData,
+  //       onUploadProgress: (progressEvent) => {
+  //         const progress = (progressEvent.loaded / progressEvent.total) * 100;
+  //         setUploadProgress(prev => ({
+  //           ...prev,
+  //           [file.name]: Math.round(progress)
+  //         }));
+  //       }
+  //     });
+
+  //     const result = await response.json();
+      
+  //     if (!response.ok) throw new Error(result.error);
+      
+  //     return result.url;
+  //   } catch (error) {
+  //     console.error(`Error uploading ${file.name}:`, error);
+  //     throw error;
+  //   }
+  // };
+
+  // const uploadFile = async (file) => {
+  //   const formData = new FormData();
+  //   formData.append('file', file);
+  
+  //   try {
+  //     // Create event source for streaming progress
+  //     const response = await fetch('/api/upload', {
+  //       method: 'POST',
+  //       body: formData,
+  //     });
+  
+  //     const reader = response.body.getReader();
+  //     const decoder = new TextDecoder();
+  
+  //     while (true) {
+  //       const { done, value } = await reader.read();
+  //       if (done) break;
+  
+  //       const chunk = decoder.decode(value);
+  //       const lines = chunk.split('\n');
+  
+  //       for (const line of lines) {
+  //         if (line.startsWith('data: ')) {
+  //           const data = JSON.parse(line.slice(5));
+  
+  //           if (data.error) {
+  //             throw new Error(data.error);
+  //           }
+  
+  //           if (data.url) {
+  //             // Upload complete, return the URL
+  //             return data.url;
+  //           }
+  
+  //           // Update progress
+  //           setUploadProgress(prev => ({
+  //             ...prev,
+  //             [file.name]: data.percentage
+  //           }));
+  //         }
+  //       }
+  //     }
+  //   } catch (error) {
+  //     console.error(`Error uploading ${file.name}:`, error);
+  //     throw error;
+  //   }
+  // };
+  // working 
+  // const uploadFile = async (file) => {
+  //   const formData = new FormData();
+  //   formData.append("file", file);
+  
+  //   try {
+  //     // Fetch with streaming progress
+  //     const response = await fetch("/api/upload", {
+  //       method: "POST",
+  //       body: formData,
+  //     });
+  
+  //     const reader = response.body.getReader();
+  //     const decoder = new TextDecoder();
+  
+  //     while (true) {
+  //       const { done, value } = await reader.read();
+  //       if (done) break;
+  
+  //       const chunk = decoder.decode(value);
+  //       const lines = chunk.split("\n");
+  
+  //       for (const line of lines) {
+  //         if (line.startsWith("data: ")) {
+  //           const data = JSON.parse(line.slice(5));
+  
+  //           if (data.error) {
+  //             throw new Error(data.error);
+  //           }
+  
+  //           if (data.url) {
+  //             // Upload complete, return the URL
+  //             return data.url;
+  //           }
+  
+  //           // Update progress
+  //           setUploadProgress((prev) => ({
+  //             ...prev,
+  //             [file.name]: data.percentage,
+  //           }));
+  //         }
+  //       }
+  //     }
+  //   } catch (error) {
+  //     console.error(`Error uploading ${file.name}:`, error);
+  //     throw error;
+  //   }
+  // };
+  const uploadFile = async (file) => {
+    const formData = new FormData();
+    formData.append("file", file);
+  
+    try {
+      // Fetch with streaming progress
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+  
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+  
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+  
+        const chunk = decoder.decode(value);
+        const lines = chunk.split("\n");
+  
+        for (const line of lines) {
+          if (line.startsWith("data: ")) {
+            const data = JSON.parse(line.slice(5));
+  
+            if (data.error) {
+              throw new Error(data.error);
+            }
+  
+            if (data.url) {
+              // Upload complete, return the URL
+              return data.url;
+            }
+  
+            // Update progress
+            setUploadProgress((prev) => ({
+              ...prev,
+              [file.name]: data.percentage,
+            }));
+          }
+        }
+      }
+    } catch (error) {
+      console.error(`Error uploading ${file.name}:`, error);
+      throw error;
+    }
+  };
+  
+
+  const handleFileChange = async (e) => {
+    const newFiles = Array.from(e.target.files);
+    setFiles(prev => [...prev, ...newFiles]);
+    
+    // Start uploading the new files immediately
+    setIsUploading(true);
+    
+    try {
+      for (const file of newFiles) {
+        const url = await uploadFile(file);
+        setUploadedFiles(prev => [...prev, { name: file.name, url }]);
+      }
+    } catch (error) {
+      console.error('Upload failed:', error);
+      alert('Failed to upload some files. Please try again.');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const removeFile = (index) => {
+    setFiles(prev => prev.filter((_, i) => i !== index));
+    setUploadedFiles(prev => prev.filter((_, i) => i !== index));
+    setUploadProgress(prev => {
+      const newProgress = { ...prev };
+      delete newProgress[files[index].name];
+      return newProgress;
+    });
+  };
+
   const handleSubmit = async () => {
     try {
       setIsSubmitting(true);
-  
-      if (!formData.projectName || !formData.cost || !formData.paymentMode || !files.length) {
+
+      if (!formData.projectName || !formData.cost || !formData.paymentMode || !uploadedFiles.length) {
         alert('Please fill in all required fields and upload at least one file');
         return;
       }
-  
-      const formDataToSend = new FormData();
-  
-      files.forEach((file) => {
-        formDataToSend.append('files', file);
-      });
-  
-      formDataToSend.append('projectName', formData.projectName);
-      formDataToSend.append('cost', formData.cost.toString());
-      formDataToSend.append('currency', formData.currency);
-      formDataToSend.append('paymentMode', formData.paymentMode);
-      formDataToSend.append('description', formData.description || '');
-      formDataToSend.append('freelancerId', freelancerId);
-      
-      if (formData.projectCount) {
-        formDataToSend.append('projectCount', formData.projectCount.toString());
-      }
-  
+
+      // Create the project with uploaded file URLs
       const response = await fetch('/api/create-project', {
         method: 'POST',
-        body: formDataToSend,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...formData,
+          files: uploadedFiles,
+          freelancerId
+        }),
       });
-  
+
       const result = await response.json();
-  
-      if (response.ok && result.success && result.projectId) {
+
+      if (!response.ok) throw new Error(result.error);
+
+      if (result.projectId) {
         router.push(`/freelancer/${freelancerId}/projects/${result.projectId}/preview`);
-      } else {
-        throw new Error(result.error || 'Unexpected API response structure');
       }
     } catch (error) {
-      console.error('Error creating project:', error.message || error);
+      console.error('Error creating project:', error);
       alert(`Failed to create project. Please try again. Error: ${error.message || 'Unknown error'}`);
     } finally {
       setIsSubmitting(false);
@@ -168,11 +480,18 @@ const AddNewProject = () => {
                   </p>
                 ) : (
                   files.map((file, index) => (
+                    // <FilePreview
+                    //   key={index}
+                    //   file={file}
+                    //   onRemove={() => removeFile(index)}
+                    // />
                     <FilePreview
-                      key={index}
-                      file={file}
-                      onRemove={() => removeFile(index)}
-                    />
+                    key={index}
+                    file={file}
+                    onRemove={() => removeFile(index)}
+                    uploadProgress={uploadProgress[file.name]}
+                    fileUrl={uploadedFiles[index]?.url}
+                  />
                   ))
                 )}
               </div>
@@ -328,3 +647,9 @@ const AddNewProject = () => {
 };
 
 export default AddNewProject;
+
+
+
+
+// Enhanced FilePreview Component with Progress Bar
+
