@@ -104,6 +104,59 @@ const FilePreview = ({ file, onRemove, uploadProgress, fileUrl }) => (
   </div>
 );
 
+// FilePreview.js component
+// const FilePreview = ({ file, onRemove, uploadProgress, fileUrl }) => (
+//   <div className="flex flex-col p-3 bg-white rounded-lg shadow-sm border border-gray-100">
+//     <div className="flex items-center justify-between mb-2">
+//       <div className="flex items-center gap-3 flex-1 min-w-0">
+//         <div className="w-8 h-8 rounded-lg bg-black/5 flex items-center justify-center flex-shrink-0">
+//           <Upload className="w-4 h-4 text-gray-600" />
+//         </div>
+//         <div className="flex-1 min-w-0">
+//           <p className="text-sm font-medium text-gray-900 truncate">{file.name}</p>
+//           <p className="text-xs text-gray-500">
+//             {(file.size / (1024 * 1024)).toFixed(2)} MB
+//           </p>
+//         </div>
+//       </div>
+//       <div className="flex items-center gap-2">
+//         {fileUrl && (
+//           <a
+//             href={fileUrl}
+//             download
+//             className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+//             onClick={(e) => e.stopPropagation()}
+//           >
+//             <Download className="w-4 h-4 text-gray-500" />
+//           </a>
+//         )}
+//         <button
+//           onClick={onRemove}
+//           className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+//         >
+//           <X className="w-4 h-4 text-gray-500" />
+//         </button>
+//       </div>
+//     </div>
+
+//     {uploadProgress !== undefined && (
+//       <div className="w-full bg-gray-200 rounded-full h-1.5 mt-2">
+//         <div
+//           className="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
+//           style={{ width: `${uploadProgress}%` }}
+//         />
+//       </div>
+//     )}
+
+//     {uploadProgress === 100 && !fileUrl && (
+//       <div className="text-xs text-blue-600 mt-1">Processing...</div>
+//     )}
+//     {fileUrl && (
+//       <div className="text-xs text-green-600 mt-1">Upload complete</div>
+//     )}
+//   </div>
+// );
+
 const AddNewProject = () => {
   const router = useRouter();
   const [files, setFiles] = useState([]);
@@ -468,6 +521,9 @@ const AddNewProject = () => {
       return newProgress;
     });
   };
+
+  
+
 
   const handleSubmit = async () => {
     try {
