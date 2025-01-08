@@ -381,6 +381,36 @@ const handleDrop = async (e) => {
   }
 };
 
+const [selectedMessage, setSelectedMessage] = useState(null);
+
+const messages = [
+  {
+    id: 1,
+    label: "Initial Draft",
+    text: "Here's the initial draft for your review. Looking forward to your feedback."
+  },
+  {
+    id: 2,
+    label: "Updates Done",
+    text: "I've completed the requested updates. Please check if this aligns with what you had in mind."
+  },
+  {
+    id: 3,
+    label: "Revision",
+    text: "I've revised the content based on your feedback. Let me know if any further changes are needed."
+  },
+  {
+    id: 4,
+    label: "Final",
+    text: "Here's the final version with all revisions incorporated. Please confirm if this meets your requirements."
+  }
+];
+
+const handleMessageClick = (message) => {
+  setSelectedMessage(message);
+  setFormData({ ...formData, description: message.text });
+};
+
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
@@ -547,7 +577,7 @@ const handleDrop = async (e) => {
             </div>
 
             {/* Right Section - Description */}
-            <div className="w-full md:w-1/2 p-4 md:p-8 bg-gradient-to-br from-white to-gray-50">
+            {/* <div className="w-full md:w-1/2 p-4 md:p-8 bg-gradient-to-br from-white to-gray-50">
               <h3 className="text-lg md:text-xl font-semibold text-gray-900 mb-6 flex items-center">
                 <span className="bg-black text-white rounded-lg w-8 h-8 inline-flex items-center justify-center mr-3 text-sm">02</span>
                 Project Description
@@ -561,7 +591,7 @@ const handleDrop = async (e) => {
                 placeholder="Describe your project details, requirements, and any special instructions..."
               />
               
-              {/* Action Buttons */}
+              
               <div className="flex justify-end space-x-4 mt-6">
                 <button
                   type="button"
@@ -579,7 +609,73 @@ const handleDrop = async (e) => {
                   {isSubmitting ? 'Creating...' : 'Create Project'}
                 </button>
               </div>
-            </div>
+            </div> */}
+
+<div className="w-full md:w-1/2 p-4 md:p-8 bg-gradient-to-br from-white to-gray-50">
+      <h3 className="text-lg md:text-xl font-semibold text-gray-900 mb-6 flex items-center">
+        <span className="bg-black text-white rounded-lg w-8 h-8 inline-flex items-center justify-center mr-3 text-sm">
+          02
+        </span>
+        Delivery Message
+      </h3>
+
+      <textarea
+        value={formData.description}
+        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+        rows={8}
+        className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-black 
+                   focus:ring-1 focus:ring-black transition-colors resize-none"
+        placeholder="Write your delivery message here..."
+      />
+
+      {/* Compact Quick Messages */}
+      <div className="mt-4">
+        <h4 className="text-sm font-medium text-gray-700 mb-2">
+          Quick Messages:
+        </h4>
+        <div className="inline-flex flex-wrap gap-2">
+          {messages.map((message) => (
+            <button
+              key={message.id}
+              onClick={() => handleMessageClick(message)}
+              className={`px-4 py-1.5 text-sm font-medium rounded-full transition-all duration-200 
+                ${
+                  selectedMessage?.id === message.id
+                    ? 'bg-gradient-to-r from-gray-800 to-black text-white shadow-sm scale-[1.02]'
+                    : 'bg-white text-gray-600 shadow-sm hover:shadow border border-gray-200 hover:border-gray-300'
+                }`}
+            >
+              {message.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Action Buttons */}
+      <div className="flex justify-end space-x-4 mt-6">
+        <button
+          type="button"
+          onClick={() => {
+            setFormData({ description: '' });
+            setSelectedMessage(null);
+          }}
+          className="px-6 py-2 rounded-lg border border-gray-200 text-gray-600 
+                     hover:bg-gray-50 transition-colors"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={handleSubmit}
+          disabled={isSubmitting}
+          className="px-6 py-2 rounded-lg bg-black text-white hover:bg-gray-900 
+                     transition-colors disabled:bg-gray-400"
+        >
+          {isSubmitting ? 'Sending...' : 'Send Message'}
+        </button>
+      </div>
+    </div>
+
+
           </div>
         </div>
       </div>
@@ -588,5 +684,3 @@ const handleDrop = async (e) => {
 };
 
 export default AddNewProject;
-
-
