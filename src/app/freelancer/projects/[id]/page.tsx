@@ -368,6 +368,8 @@ import React, { useState, useEffect } from 'react';
 import { Plus, X, Upload, Share2, Eye, ExternalLink } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
+import { useAuth } from '@/context/authContext';
+
 
 const FilePreview = ({ file, onRemove }) => (
   <div className="flex items-center justify-between p-3 bg-white rounded-lg shadow-sm border border-gray-100">
@@ -397,7 +399,10 @@ const ProjectDetailsPage = () => {
   
   const params = useParams();
   const projectId = params.id;
-  const freelancerId =localStorage.getItem('freelancerId');
+  // const freelancerId =localStorage.getItem('freelancerId');
+  
+  const { freelancerId, email, isAuthenticated, isLoading, logout } = useAuth();
+  
 
   const [formData, setFormData] = useState({
     desc: '',
@@ -540,7 +545,7 @@ const ProjectDetailsPage = () => {
                     {project.status}
                   </span>
                   <Link 
-                    href={`/freelancer/${freelancerId}/projects/${projectId}/preview`}
+                    href={`${projectId}/preview`}
                     className="bg-black text-white px-2 py-0.5 rounded-md text-xs font-medium hover:bg-gray-800 transition-colors"
                   >
                     Open Preview

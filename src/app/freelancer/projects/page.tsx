@@ -4,33 +4,22 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { Search, Eye, Download, ExternalLink, Filter, ChevronDown } from 'lucide-react';
+import { useAuth } from '@/context/authContext';
 
 const ProjectsPage = () => {
-  // const params = useParams();
-  // const freelancerId = params.userid;
+ 
 
+  // const [freelancerId, setFreelancerId] = useState(null);
+  const { freelancerId, email, isAuthenticated,  logout } = useAuth();
+  
   // useEffect(() => {
-  //   const freelancerId = localStorage.getItem("freelancerId");
-  //   console.log(freelancerId);
-  //   if (freelancerId) {
-  //     fetchProjects();
-  //   }
+  //   // Simple API call to get the ID from cookie
+  //   fetch('/api/get-freelancer-id', {
+  //     credentials: 'include'  // Important: This sends the cookie
+  //   })
+  //     .then(res => res.json())
+  //     .then(data => setFreelancerId(data.freelancerId));
   // }, []);
-
-  const [freelancerId, setFreelancerId] = useState(null); 
-
-  useEffect(() => {
-    const id = localStorage.getItem("freelancerId");
-    console.log("FreelancerId from localStorage:", id);
-    
-    if (id) {
-      setFreelancerId(id);  // Store in state
-      console.log("About to fetch projects");
-      fetchProjects(id);  // Pass the id directly to fetchProjects
-    } else {
-      console.log("No freelancerId found in localStorage");
-    }
-  }, []);
 
 
   const [allProjects, setAllProjects] = useState([]);
@@ -52,46 +41,33 @@ const ProjectsPage = () => {
         filterProjects();
       }, [searchTerm, activeFilter, allProjects]);
     
-      // const fetchProjects = async () => {
-      //   try {
-      //     setIsLoading(true);
-      //     const response = await fetch('/api/get-freelancer-projects', {
-      //       method: 'POST',
-      //       headers: {
-      //         'Content-Type': 'application/json'
-      //       },
-      //       body: JSON.stringify({ freelancerId })
-      //     });
-      //     const data = await response.json();
-      //     if (!response.ok) throw new Error(data.error);
-      //     setAllProjects(data);
-      //     setFilteredProjects(data);
-      //   } catch (error) {
-      //     console.error('Error fetching projects:', error);
-      //   } finally {
-      //     setIsLoading(false);
-      //   }
-      // };
-      const fetchProjects = async (id) => {  // Accept id as parameter
-        try {
-          setIsLoading(true);
-          const response = await fetch('/api/get-freelancer-projects', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ freelancerId: id })  // Use the passed id
-          });
-          const data = await response.json();
-          if (!response.ok) throw new Error(data.error);
-          setAllProjects(data);
-          setFilteredProjects(data);
-        } catch (error) {
-          console.error('Error fetching projects:', error);
-        } finally {
-          setIsLoading(false);
+    
+     
+      useEffect(() => {
+        const fetchProjects = async (id) => {  // Accept id as parameter
+          try {
+            setIsLoading(true);
+            const response = await fetch('/api/get-freelancer-projects', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ freelancerId: id })  // Use the passed id
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error);
+            setAllProjects(data);
+            setFilteredProjects(data);
+          } catch (error) {
+            console.error('Error fetching projects:', error);
+          } finally {
+            setIsLoading(false);
+          }
+        };
+        if (freelancerId) {
+          fetchProjects(freelancerId);
         }
-      };
+      }, [freelancerId]);
       const filterProjects = () => {
         let filtered = [...allProjects];
     
@@ -120,13 +96,11 @@ const ProjectsPage = () => {
   };
 
   return (
-    // <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 md:p-8 space-y-4 md:space-y-6">
-    // <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 md:p-8 space-y-4 md:space-y-6 mt-[57px] md:mt-0">  {/* Added margin-top */}
+   
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 md:p-8 space-y-4 md:space-y-6 mt-[57px] md:mt-0 relative z-[1]">
-      {/* Top Strip */}
+      
       <div className="bg-white rounded-xl md:rounded-2xl shadow-xl border border-gray-200/50 backdrop-blur-sm relative z-[2]">
-        {/* ... rest of your top strip content ... */}
-      {/* <div className="bg-white rounded-xl md:rounded-2xl shadow-xl border border-gray-200/50 backdrop-blur-sm"> */}
+     
         <div className="px-4 md:px-8 py-4 md:py-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
@@ -187,7 +161,7 @@ const ProjectsPage = () => {
 
       {/* Main Content */}
       <div className="bg-white rounded-xl md:rounded-2xl shadow-xl border border-gray-200/50 backdrop-blur-sm relative z-[1]">
-      {/* <div className="bg-white rounded-xl md:rounded-2xl shadow-xl border border-gray-200/50 backdrop-blur-sm"> */}
+     
         {/* Project Labels - Hidden on mobile */}
         <div className="hidden md:block px-6 py-4 border-b border-gray-200">
           <div className="grid grid-cols-6 gap-4">
@@ -228,7 +202,7 @@ const ProjectsPage = () => {
                   <div className="flex justify-between items-center">
                     <div className="font-medium text-gray-900">₹{project.totalCost.toLocaleString()}</div>
                     <button 
-                      onClick={() => window.location.href = `/freelancer/${freelancerId}/projects/${project.id}`}
+                      onClick={() => window.location.href = `/freelancer/projects/${project.id}`}
                       className="p-2 bg-white hover:bg-gray-50 rounded-lg transition-all border border-gray-200 shadow-sm"
                     >
                       <Eye className="w-4 h-4 text-gray-600" />
@@ -257,7 +231,7 @@ const ProjectsPage = () => {
                   </div>
                   <div className="flex items-center justify-end gap-2">
                     <button 
-                      onClick={() => window.location.href = `/freelancer/${freelancerId}/projects/${project.id}`}
+                      onClick={() => window.location.href = `/freelancer/projects/${project.id}`}
                       className="p-2 bg-white hover:bg-gray-50 rounded-lg transition-all relative border border-gray-200 shadow-sm group/button"
                     >
                       <Eye className="w-4 h-4 text-gray-600 transform transition-transform group-hover/button:scale-110" />

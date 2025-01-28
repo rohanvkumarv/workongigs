@@ -214,29 +214,40 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, ArrowRight } from 'lucide-react';
-
+import { useAuth } from '@/context/authContext';
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [activeIndex, setActiveIndex] = useState(null);
   const [mounted, setMounted] = useState(false);
-  const [freelancerId, setFreelancerId] = useState(null);
 
+  const { freelancerId, email, isAuthenticated, isLoading, logout } = useAuth();
+  console.log( freelancerId)
+  
+  // useEffect(() => {
+  //   setMounted(true);
+  //   if (typeof window !== 'undefined') {
+  //     const id = window.localStorage.getItem('freelancerId');
+  //     setFreelancerId(id);
+  //   }
+
+  //   const handleScroll = () => {
+  //     setScrolled(window.scrollY > 20);
+  //   };
+  //   window.addEventListener('scroll', handleScroll);
+  //   return () => window.removeEventListener('scroll', handleScroll);
+  // }, []);
+
+  // Left side navigation items
   useEffect(() => {
-    setMounted(true);
-    if (typeof window !== 'undefined') {
-      const id = window.localStorage.getItem('freelancerId');
-      setFreelancerId(id);
-    }
-
+    setMounted(true);  // Still needed for SSR
+    
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  // Left side navigation items
   const leftNavItems = [
     { label: 'How To Use', href: '/#usage' },
   ];
@@ -336,7 +347,7 @@ const Navbar = () => {
                 
                 {freelancerId ? (
                   <motion.a
-                    href={`/freelancer/${freelancerId}/dashboard`}
+                    href={`/freelancer/dashboard`}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     className="ml-2 px-5 py-2 bg-black text-white rounded-xl text-sm font-medium

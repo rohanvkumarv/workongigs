@@ -15,10 +15,10 @@ const Sidebar = () => {
   const ProjectId= params.id
 
   const menuItems = [
-    { icon: Home, label: 'Dashboard', href: `/freelancer/${freelancerId}/dashboard` },
-    { icon: FolderPlus, label: 'Projects', href:   `/freelancer/${freelancerId}/projects`},
-    { icon: Plus, label: 'Add New', href: `/freelancer/${freelancerId}/add_new`},
-    { icon: User, label: 'Profile', href: `/freelancer/${freelancerId}/profile` }
+    { icon: Home, label: 'Dashboard', href: `/freelancer/dashboard` },
+    { icon: FolderPlus, label: 'Projects', href:   `/freelancer/projects`},
+    { icon: Plus, label: 'Add New', href: `/freelancer/add_new`},
+    { icon: User, label: 'Profile', href: `/freelancer/profile` }
   ];
 
 
@@ -48,21 +48,98 @@ const Sidebar = () => {
     type: 'success'
   });
 
-  const handleLogout = async () => {
+  // const handleLogout = async () => {
    
-        // Clear auth data
-        localStorage.removeItem("freelancerId");
+  //       // Clear auth data
+  //       localStorage.removeItem("freelancerId");
         
-        // Show success alert
-        setAlert({
-          show: true,
-          message: "Logged out successfully",
-          type: "success"
-        });
-        router.push('/auth/freelancer/login');
+  //       // Show success alert
+  //       setAlert({
+  //         show: true,
+  //         message: "Logged out successfully",
+  //         type: "success"
+  //       });
+  //       router.push('/auth/freelancer/login');
   
       
-  };
+  // };
+
+
+  
+// const handleLogout = async () => {
+//   try {
+//     // Call logout API to clear cookies
+//     const response = await fetch('/api/logout', {
+//       method: 'POST',
+//       credentials: 'include' // Important for cookie handling
+//     });
+
+//     if (response.ok) {
+//       // Clear localStorage for backward compatibility
+//       localStorage.removeItem("freelancerId");
+      
+//       // Show success alert
+//       setAlert({
+//         show: true,
+//         message: "Logged out successfully",
+//         type: "success"
+//       });
+
+//       // Redirect to login page
+//       router.push('/auth/freelancer/login');
+//     } else {
+//       setAlert({
+//         show: true,
+//         message: "Failed to logout. Please try again.",
+//         type: "error"
+//       });
+//     }
+//   } catch (error) {
+//     console.error('Logout error:', error);
+//     setAlert({
+//       show: true,
+//       message: "An error occurred during logout",
+//       type: "error"
+//     });
+//   }
+// };
+const handleLogout = async () => {
+  try {
+    const response = await fetch('/api/logout', {
+      method: 'POST',
+      credentials: 'include' // Important for cookie handling
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      // Clear localStorage for backward compatibility
+      localStorage.removeItem("freelancerId");
+      
+      setAlert({
+        show: true,
+        message: data.message || "Logged out successfully",
+        type: "success"
+      });
+
+      // Redirect to login page
+      router.push('/auth/freelancer/login');
+    } else {
+      setAlert({
+        show: true,
+        message: data.error || "Failed to logout. Please try again.",
+        type: "error"
+      });
+    }
+  } catch (error) {
+    console.error('Logout error:', error);
+    setAlert({
+      show: true,
+      message: "An error occurred during logout",
+      type: "error"
+    });
+  }
+};
 
   return (
     <>

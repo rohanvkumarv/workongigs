@@ -1,70 +1,131 @@
 
 
-// import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
-// import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-// import { v4 as uuidv4 } from "uuid";
+// // // // app/api/upload/route.js
+// // // import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+// // // import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+// // // import { v4 as uuidv4 } from "uuid";
+
+// // // const s3 = new S3Client({
+// // //   region: process.env.AWS_S3_REGION,
+// // //   credentials: {
+// // //     accessKeyId: process.env.S3_ACCESS_KEY_ID,
+// // //     secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+// // //   },
+// // // });
+
+// // // export async function POST(req) {
+// // //   try {
+// // //     const data = await req.formData();
+// // //     const file = data.get("file");
+// // //     const originalFileName = data.get("originalFileName");
+
+// // //     if (!file) {
+// // //       return Response.json({ error: "No file provided" }, { status: 400 });
+// // //     }
+
+// // //     const fileId = uuidv4();
+// // //     const fileExtension = originalFileName.split('.').pop();
+// // //     const fileName = `${fileId}.${fileExtension}`;
+
+// // //     // Direct upload without chunks for simplicity first
+// // //     const command = new PutObjectCommand({
+// // //       Bucket: process.env.S3_BUCKET_NAME,
+// // //       Key: fileName,
+// // //       Body: await file.arrayBuffer(),
+// // //       ContentType: file.type,
+// // //       ACL: 'public-read'  // Make sure this is added
+// // //     });
+
+// // //     await s3.send(command);
+
+// // //     const finalUrl = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_S3_REGION}.amazonaws.com/${fileName}`;
+
+// // //     return Response.json({
+// // //       success: true,
+// // //       url: finalUrl,
+// // //       key: fileName
+// // //     });
+// // //   } catch (error) {
+// // //     console.error("Upload error:", error);
+// // //     return Response.json({ 
+// // //       error: error.message,
+// // //       details: error.stack 
+// // //     }, { status: 500 });
+// // //   }
+// // // }
+
+// // import { S3Client, CreateMultipartUploadCommand } from "@aws-sdk/client-s3";
+
+// // const s3 = new S3Client({
+// //   region: process.env.AWS_S3_REGION,
+// //   credentials: {
+// //     accessKeyId: process.env.S3_ACCESS_KEY_ID,
+// //     secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+// //   },
+// // });
+
+// // export async function POST(req) {
+// //   const { fileName, fileType } = await req.json();
+// //   const key = `uploads/${Date.now()}-${fileName}`;
+
+// //   const uploadCommand = new CreateMultipartUploadCommand({
+// //     Bucket: process.env.S3_BUCKET_NAME,
+// //     Key: key,
+// //     ContentType: fileType,
+// //   });
+
+// //   const { UploadId } = await s3.send(uploadCommand);
+
+// //   return Response.json({ uploadId: UploadId, key });
+// // }
+// // app/api/upload/route.js
+// import { S3Client, CreateMultipartUploadCommand } from "@aws-sdk/client-s3";
 
 // const s3 = new S3Client({
-//   region: process.env.AWS_S3_REGION, // Remove NEXT_PUBLIC_
+//   region: process.env.AWS_S3_REGION,
 //   credentials: {
-//     accessKeyId: process.env.S3_ACCESS_KEY_ID, // Remove NEXT_PUBLIC_
-//     secretAccessKey: process.env.S3_SECRET_ACCESS_KEY, // Remove NEXT_PUBLIC_
+//     accessKeyId: process.env.S3_ACCESS_KEY_ID,
+//     secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
 //   },
 // });
 
 // export async function POST(req) {
-//   const headers = new Headers();
-//   headers.set("Content-Type", "text/event-stream");
-//   headers.set("Cache-Control", "no-cache");
-//   headers.set("Connection", "keep-alive");
+//   try {
+//     // Parse FormData instead of JSON
+//     const formData = await req.formData();
+//     const fileName = formData.get("fileName");
+//     const fileType = formData.get("fileType");
+    
+//     if (!fileName) {
+//       return Response.json({ error: "fileName is required" }, { status: 400 });
+//     }
 
-//   const stream = new ReadableStream({
-//     async start(controller) {
-//       const encoder = new TextEncoder();
+//     const key = `uploads/${Date.now()}-${fileName}`;
 
-//       try {
-//         const formData = await req.formData();
-//         const file = formData.get("file");
+//     const uploadCommand = new CreateMultipartUploadCommand({
+//       Bucket: process.env.S3_BUCKET_NAME,
+//       Key: key,
+//       ContentType: fileType || 'application/octet-stream',
+//     });
 
-//         if (!file) {
-//           throw new Error("No file provided");
-//         }
+//     const { UploadId } = await s3.send(uploadCommand);
 
-//         const fileExtension = file.name.split(".").pop();
-//         const fileName = `${uuidv4()}.${fileExtension}`;
-
-//         // Generate presigned URL
-//         const command = new PutObjectCommand({
-//           Bucket: process.env.S3_BUCKET_NAME,
-//           Key: fileName,
-//           ContentType: file.type,
-//         });
-
-//         const presignedUrl = await getSignedUrl(s3, command, { expiresIn: 3600 });
-//         const finalUrl = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_S3_REGION}.amazonaws.com/${fileName}`;
-
-//         // Send the presigned URL to the client
-//         controller.enqueue(
-//           encoder.encode(
-//             `data: ${JSON.stringify({ presignedUrl, finalUrl })}\n\n`
-//           )
-//         );
-//         controller.close();
-//       } catch (error) {
-//         const errorData = JSON.stringify({ error: error.message });
-//         controller.enqueue(encoder.encode(`data: ${errorData}\n\n`));
-//         controller.close();
-//       }
-//     },
-//   });
-
-//   return new Response(stream, { headers });
+//     return Response.json({ 
+//       uploadId: UploadId, 
+//       key,
+//       success: true 
+//     });
+//   } catch (error) {
+//     console.error('Upload error:', error);
+//     return Response.json(
+//       { error: "Failed to initiate upload" }, 
+//       { status: 500 }
+//     );
+//   }
 // }
 
 // app/api/upload/route.js
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { v4 as uuidv4 } from "uuid";
+import { S3Client, CreateMultipartUploadCommand } from "@aws-sdk/client-s3";
 
 const s3 = new S3Client({
   region: process.env.AWS_S3_REGION,
@@ -76,40 +137,34 @@ const s3 = new S3Client({
 
 export async function POST(req) {
   try {
-    const data = await req.formData();
-    const file = data.get("file");
-    const chunkNumber = data.get("chunkNumber");
-    const totalChunks = data.get("totalChunks");
-    const originalFileName = data.get("originalFileName");
-
-    if (!file) {
-      return Response.json({ error: "No file provided" }, { status: 400 });
+    const formData = await req.formData();
+    const fileName = formData.get("fileName");
+    const fileType = formData.get("fileType");
+    
+    if (!fileName) {
+      return Response.json({ error: "fileName is required" }, { status: 400 });
     }
 
-    const fileId = uuidv4();
-    const fileExtension = originalFileName.split('.').pop();
-    const fileName = `${fileId}-chunk${chunkNumber}.${fileExtension}`;
-    const finalFileName = `${fileId}.${fileExtension}`;
+    const key = `uploads/${Date.now()}-${fileName}`;
 
-    const command = new PutObjectCommand({
+    const uploadCommand = new CreateMultipartUploadCommand({
       Bucket: process.env.S3_BUCKET_NAME,
-      Key: fileName,
-      ContentType: file.type,
+      Key: key,
+      ContentType: fileType || 'application/octet-stream',
     });
 
-    const presignedUrl = await getSignedUrl(s3, command, { expiresIn: 3600 });
-    const finalUrl = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_S3_REGION}.amazonaws.com/${finalFileName}`;
+    const { UploadId } = await s3.send(uploadCommand);
 
-    return Response.json({
-      success: true,
-      presignedUrl,
-      finalUrl,
-      fileId,
-      chunkNumber,
-      totalChunks,
+    return Response.json({ 
+      uploadId: UploadId, 
+      key,
+      success: true 
     });
   } catch (error) {
-    console.error("Upload error:", error);
-    return Response.json({ error: error.message }, { status: 500 });
+    console.error('Upload error:', error);
+    return Response.json(
+      { error: "Failed to initiate upload" }, 
+      { status: 500 }
+    );
   }
 }

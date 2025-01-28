@@ -209,35 +209,77 @@ const UserLoginPage = () => {
     setTimeout(() => setAlert({ show: false, type: '', title: '', message: '' }), 5000);
   };
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    try {
-      setLoading(true);
-      const response = await fetch("/api/freelancer-login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
+// Login handler
+// const handleLogin = async (e) => {
+//   e.preventDefault();
+//   try {
+//     setLoading(true);
+//     const response = await fetch("/api/freelancer-login", {
+//       method: "POST",
+//       headers: {
+//         "Content-Type": "application/json",
+//       },
+//       credentials: 'include', // Important for cookies
+//       body: JSON.stringify(formData),
+//     });
 
-      const data = await response.json();
+//     const data = await response.json();
 
-      if (response.ok) {
-        showAlert("success", "Success", "Login successful! Redirecting...");
-        if (data.user?.id) {
-          localStorage.setItem("freelancerId", data.user.id);
-          router.push(`/freelancer/${data.user.id}/dashboard`);
-        }
-      } else {
-        showAlert('error', 'Error', data.error || 'Failed to sign in. Please try again.');
+//     if (response.ok) {
+//       showAlert("success", "Success", "Login successful! Redirecting...");
+//       if (data.user?.id) {
+//         // Optional: Keep localStorage for backward compatibility
+//         localStorage.setItem("freelancerId", data.user.id);
+//         router.push(`/freelancer/${data.user.id}/dashboard`);
+//       }
+//     } else {
+//       showAlert('error', 'Error', data.error || 'Failed to sign in. Please try again.');
+//     }
+//   } catch (error) {
+//     showAlert('error', 'Error', 'An unexpected error occurred.');
+//   } finally {
+//     setLoading(false);
+//   }
+// };
+
+// Login handling
+const handleLogin = async (e) => {
+  e.preventDefault();
+  try {
+    setLoading(true);
+    const response = await fetch("/api/freelancer-login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: 'include', // Important for cookies
+      body: JSON.stringify(formData),
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      showAlert("success", "Success", "Login successful! Redirecting...");
+      if (data.freelancer?.id) {
+        
+        router.push(`/freelancer/dashboard`);
       }
-    } catch (error) {
-      showAlert('error', 'Error', 'An unexpected error occurred.');
-    } finally {
-      setLoading(false);
+    } else {
+      showAlert('error', 'Error', data.error || 'Failed to sign in. Please try again.');
     }
-  };
+  } catch (error) {
+    console.error('Login error:', error);
+    showAlert('error', 'Error', 'An unexpected error occurred.');
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+
+// Logout handling
+
+
 
   const handleResetPassword = async (e) => {
     e.preventDefault();

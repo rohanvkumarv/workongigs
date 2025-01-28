@@ -32,13 +32,20 @@
 import "@/app/globals.css"
 import DashboardLayout from "./_components/DashboardLayout" // Import the new layout component
 import Sidebar from "./_components/Sidebar";
+
+import { AuthProvider } from '@/context/authContext';
+
+
+
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body>
+      <AuthProvider>
         <DashboardLayout>
           {children}
         </DashboardLayout>
+      </AuthProvider>
       </body>
     </html>
   );
