@@ -7,7 +7,7 @@ const FileUploadComponent = ({ onUploadComplete }) => {
   const [uploadProgress, setUploadProgress] = useState({});
   const [uploadedFiles, setUploadedFiles] = useState([]);
 
-  const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB chunks
+  const CHUNK_SIZE = 3 * 1024 * 1024; // 5MB chunks
 
   const createChunks = (file) => {
     const chunks = [];
