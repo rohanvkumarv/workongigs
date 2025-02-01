@@ -5,7 +5,7 @@ import { db } from '@/lib/prisma';  // Ensure this path is correct based on your
 export async function GET(request) {
   try {
     // Fetch all freelancers from the database
-    const freelancers = await db.project.findMany();
+    const freelancers = await db.client.findMany();
 
     // Return the freelancers as a JSON response
     return NextResponse.json(freelancers);

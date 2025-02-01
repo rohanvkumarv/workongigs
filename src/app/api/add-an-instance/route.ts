@@ -55,7 +55,7 @@ export async function POST(req: Request) {
 
     const instance = await db.instance.create({
       data: {
-        name: `Instance #${Date.now()}`,
+        name: `Delivery #${Date.now()}`,
         desc: desc.toString(),
         cost,
         PaymentStatus:"Not Paid",

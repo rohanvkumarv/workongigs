@@ -132,7 +132,7 @@ const FreelancerSignupPage = () => {
 const handleVerifyOtp = async () => {
   try {
     setLoading(true);
-    const response = await fetch('/api/verify-otp', {
+    const response = await fetch('/api/verify-otp-and-create-user', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

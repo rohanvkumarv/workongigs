@@ -22,29 +22,31 @@ model Freelancer {
   pincode    String?
   profession String?
 
-  projects   Project[] @relation("FreelancerProjects")
+  clients    Client[]  @relation("FreelancerClients") 
 
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 }
 
-model Project {
+model Client {
   id           String        @id @default(cuid())
 
   name         String
   modeOfPay    String
   status        String
 
-  instances    Instance[] @relation("ProjectInstances")
+  deliveries   Delivery[] @relation("ClientDeliveries")
 
   freelancerId String
-  freelancer   Freelancer @relation("FreelancerProjects", fields: [freelancerId], references: [id])
+  reelancer   Freelancer   @relation("FreelancerClients", fields: [freelancerId], references: [id])
 
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  phone        String?      // Optional phone field
+  email        String?      // Optional email field
 }
 
-model Instance {
+model Delivery {
   id         String      @id @default(cuid())
 
 
@@ -53,10 +55,10 @@ model Instance {
   cost       Float
   PaymentStatus  String
 
-  files      File[]   @relation("InstanceFiles")
+  files         File[]    @relation("DeliveryFiles")  // Changed to DeliveriesFiles
 
-  projectId  String
-  project    Project  @relation("ProjectInstances", fields: [projectId], references: [id])
+  clientId      String    // Changed from projectId to clientId
+  client        Client    @relation("ClientDeliveries", fields: [clientId], references: [id])
 
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
@@ -69,8 +71,8 @@ model File {
   name       String
   url        String
 
-  instanceId String
-  instance   Instance @relation("InstanceFiles", fields: [instanceId], references: [id])
+  deliveryId  String    
+  delivery   Delivery @relation("DeliveryFiles", fields: [deliveryId], references: [id])  // Changed relation name
 
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt

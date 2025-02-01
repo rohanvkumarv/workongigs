@@ -18,6 +18,7 @@ const Sidebar = () => {
     { icon: Home, label: 'Dashboard', href: `/freelancer/dashboard` },
     { icon: FolderPlus, label: 'Projects', href:   `/freelancer/projects`},
     { icon: Plus, label: 'Add New', href: `/freelancer/add_new`},
+    { icon: Plus, label: 'Create New Delivery', href: `/freelancer/create_new_delivery`},
     { icon: User, label: 'Profile', href: `/freelancer/profile` }
   ];
 
