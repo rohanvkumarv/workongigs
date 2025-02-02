@@ -16,8 +16,8 @@ const Sidebar = () => {
 
   const menuItems = [
     { icon: Home, label: 'Dashboard', href: `/freelancer/dashboard` },
-    { icon: FolderPlus, label: 'Projects', href:   `/freelancer/projects`},
-    { icon: Plus, label: 'Add New', href: `/freelancer/add_new`},
+    { icon: FolderPlus, label: 'Clients', href:   `/freelancer/clients`},
+    { icon: Plus, label: 'Add New Client', href: `/freelancer/add_new`},
     { icon: Plus, label: 'Create New Delivery', href: `/freelancer/create_new_delivery`},
     { icon: User, label: 'Profile', href: `/freelancer/profile` }
   ];

@@ -180,20 +180,1078 @@ const PaymentDownloadSection = ({
 
 
 // Audio Preview Component with Payment Gate
+// const AudioPreview = ({ url, filename, isPaid }) => {
+//   const [isPlaying, setIsPlaying] = useState(false);
+//   const [progress, setProgress] = useState(0);
+//   const [currentTime, setCurrentTime] = useState(0);
+//   const [duration, setDuration] = useState(0);
+//   const [hasReachedPreviewLimit, setHasReachedPreviewLimit] = useState(false);
+//   const audioRef = useRef(null);
+  
+//   const PREVIEW_DURATION = 5; // Preview duration in seconds
+
+//   const formatTime = (time) => {
+//     const minutes = Math.floor(time / 60);
+//     const seconds = Math.floor(time % 60);
+//     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+//   };
+
+//   useEffect(() => {
+//     if (audioRef.current) {
+//       const handleTimeUpdate = () => {
+//         const current = audioRef.current.currentTime;
+//         setCurrentTime(current);
+//         setProgress((current / audioRef.current.duration) * 100);
+
+//         if (!isPaid && current >= PREVIEW_DURATION && !hasReachedPreviewLimit) {
+//           audioRef.current.pause();
+//           setIsPlaying(false);
+//           setHasReachedPreviewLimit(true);
+//         }
+//       };
+
+//       const handleLoadedMetadata = () => {
+//         setDuration(audioRef.current.duration);
+//       };
+
+//       audioRef.current.addEventListener('timeupdate', handleTimeUpdate);
+//       audioRef.current.addEventListener('loadedmetadata', handleLoadedMetadata);
+
+//       return () => {
+//         if (audioRef.current) {
+//           audioRef.current.removeEventListener('timeupdate', handleTimeUpdate);
+//           audioRef.current.removeEventListener('loadedmetadata', handleLoadedMetadata);
+//         }
+//       };
+//     }
+//   }, [isPaid, hasReachedPreviewLimit]);
+
+//   const handlePlayPause = () => {
+//     if (!isPaid && hasReachedPreviewLimit) {
+//       return;
+//     }
+
+//     if (isPlaying) {
+//       audioRef.current?.pause();
+//     } else {
+//       if (!isPaid && currentTime >= PREVIEW_DURATION) {
+//         audioRef.current.currentTime = 0;
+//       }
+//       audioRef.current?.play();
+//     }
+//     setIsPlaying(!isPlaying);
+//   };
+
+//   const handleProgressClick = (e) => {
+//     if (!isPaid) return;
+
+//     const rect = e.currentTarget.getBoundingClientRect();
+//     const x = e.clientX - rect.left;
+//     const percent = x / rect.width;
+//     const newTime = percent * audioRef.current.duration;
+//     audioRef.current.currentTime = newTime;
+//   };
+
+//   return (
+//     <div className="w-full h-full flex items-center justify-center bg-gray-50">
+//       <div className="w-full max-w-md mx-4">
+//         <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden p-6">
+//           <div className="mb-4">
+//             <h3 className="text-base font-medium text-gray-900 truncate">
+//               {filename}
+//             </h3>
+//             <p className="text-sm text-gray-500">
+//               {formatTime(currentTime)} / {formatTime(isPaid ? duration : PREVIEW_DURATION)}
+//             </p>
+//           </div>
+
+//           <div className="mb-4">
+//             <div 
+//               className="w-full h-1 bg-gray-100 rounded-full cursor-pointer relative"
+//               onClick={handleProgressClick}
+//             >
+//               <div 
+//                 className={`absolute h-full rounded-full ${
+//                   isPaid ? 'bg-black' : 'bg-gray-400'
+//                 }`}
+//                 style={{ 
+//                   width: `${isPaid ? progress : Math.min(progress, (PREVIEW_DURATION/duration) * 100)}%`
+//                 }}
+//               />
+//               {!isPaid && (
+//                 <div 
+//                   className="absolute h-full w-1 bg-red-500"
+//                   style={{ 
+//                     left: `${(PREVIEW_DURATION/duration) * 100}%`,
+//                     display: duration ? 'block' : 'none'
+//                   }}
+//                 />
+//               )}
+//             </div>
+//           </div>
+
+//           <div className="flex justify-center">
+//             <button 
+//               onClick={handlePlayPause}
+//               disabled={!isPaid && hasReachedPreviewLimit}
+//               className={`p-3 rounded-full transition-colors duration-200 ${
+//                 !isPaid && hasReachedPreviewLimit
+//                   ? 'bg-gray-200 text-gray-400'
+//                   : 'bg-black text-white hover:bg-gray-800'
+//               }`}
+//             >
+//               {isPlaying ? (
+//                 <Pause className="w-5 h-5" />
+//               ) : (
+//                 <Play className="w-5 h-5 ml-0.5" />
+//               )}
+//             </button>
+//           </div>
+
+//           {!isPaid && (
+//             <div className="mt-4 text-center">
+//               <Lock className="w-5 h-5 mx-auto mb-2 text-gray-400" />
+//               <p className="text-sm text-gray-500">
+//                 {hasReachedPreviewLimit 
+//                   ? 'Preview limit reached. Purchase to continue listening.'
+//                   : `Preview available: First ${PREVIEW_DURATION} seconds`}
+//               </p>
+//             </div>
+//           )}
+
+//           <audio
+//             ref={audioRef}
+//             src={url}
+//             preload="metadata"
+//             className="hidden"
+//           />
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
+// Audio Preview Component with Payment Gate and Preview Segments
+// const AudioPreview = ({ url, filename, isPaid }) => {
+//   const [isPlaying, setIsPlaying] = useState(false);
+//   const [progress, setProgress] = useState(0);
+//   const [currentTime, setCurrentTime] = useState(0);
+//   const [duration, setDuration] = useState(0);
+//   const [hasReachedPreviewLimit, setHasReachedPreviewLimit] = useState(false);
+//   const [previewSegments, setPreviewSegments] = useState([]);
+//   const [currentSegment, setCurrentSegment] = useState(null);
+//   const audioRef = useRef(null);
+  
+//   const calculatePreviewSegments = (totalDuration) => {
+//     let segments = [];
+//     if (totalDuration <= 120) { // Up to 2 minutes
+//       const segmentDuration = 5;
+//       const numSegments = 3;
+//       for (let i = 0; i < numSegments; i++) {
+//         const maxStart = totalDuration - segmentDuration;
+//         const start = Math.min(Math.floor(Math.random() * maxStart), maxStart);
+//         segments.push({ start, duration: segmentDuration });
+//       }
+//     } else if (totalDuration <= 600) { // Up to 10 minutes
+//       const segmentDuration = 5;
+//       const numSegments = 5;
+//       for (let i = 0; i < numSegments; i++) {
+//         const sectionSize = totalDuration / numSegments;
+//         const sectionStart = sectionSize * i;
+//         const maxStart = sectionStart + sectionSize - segmentDuration;
+//         const start = Math.min(sectionStart + Math.floor(Math.random() * (sectionSize - segmentDuration)), maxStart);
+//         segments.push({ start, duration: segmentDuration });
+//       }
+//     } else { // More than 10 minutes
+//       const segmentDuration = 5;
+//       const numSegments = 8;
+//       for (let i = 0; i < numSegments; i++) {
+//         const sectionSize = totalDuration / numSegments;
+//         const sectionStart = sectionSize * i;
+//         const maxStart = sectionStart + sectionSize - segmentDuration;
+//         const start = Math.min(sectionStart + Math.floor(Math.random() * (sectionSize - segmentDuration)), maxStart);
+//         segments.push({ start, duration: segmentDuration });
+//       }
+//     }
+//     return segments.sort((a, b) => a.start - b.start);
+//   };
+
+//   const formatTime = (time) => {
+//     const minutes = Math.floor(time / 60);
+//     const seconds = Math.floor(time % 60);
+//     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+//   };
+
+//   useEffect(() => {
+//     if (audioRef.current) {
+//       const handleTimeUpdate = () => {
+//         const current = audioRef.current.currentTime;
+//         setCurrentTime(current);
+//         setProgress((current / audioRef.current.duration) * 100);
+
+//         // Check if current preview segment has ended
+//         if (!isPaid && currentSegment) {
+//           if (current >= currentSegment.start + currentSegment.duration) {
+//             audioRef.current.pause();
+//             setIsPlaying(false);
+//             setCurrentSegment(null);
+//           }
+//         }
+//       };
+
+//       const handleLoadedMetadata = () => {
+//         const totalDuration = audioRef.current.duration;
+//         setDuration(totalDuration);
+//         if (!isPaid) {
+//           setPreviewSegments(calculatePreviewSegments(totalDuration));
+//         }
+//       };
+
+//       audioRef.current.addEventListener('timeupdate', handleTimeUpdate);
+//       audioRef.current.addEventListener('loadedmetadata', handleLoadedMetadata);
+
+//       return () => {
+//         if (audioRef.current) {
+//           audioRef.current.removeEventListener('timeupdate', handleTimeUpdate);
+//           audioRef.current.removeEventListener('loadedmetadata', handleLoadedMetadata);
+//         }
+//       };
+//     }
+//   }, [isPaid, currentSegment]);
+
+//   const playSegment = (segment) => {
+//     if (isPlaying && currentSegment === segment) {
+//       audioRef.current.pause();
+//       setIsPlaying(false);
+//       setCurrentSegment(null);
+//       return;
+//     }
+
+//     setCurrentSegment(segment);
+//     audioRef.current.currentTime = segment.start;
+//     audioRef.current.play();
+//     setIsPlaying(true);
+//   };
+
+//   const handlePlayPause = () => {
+//     if (!isPaid) return;
+
+//     if (isPlaying) {
+//       audioRef.current?.pause();
+//     } else {
+//       audioRef.current?.play();
+//     }
+//     setIsPlaying(!isPlaying);
+//   };
+
+//   const handleProgressClick = (e) => {
+//     if (!isPaid) return;
+
+//     const rect = e.currentTarget.getBoundingClientRect();
+//     const x = e.clientX - rect.left;
+//     const percent = x / rect.width;
+//     const newTime = percent * audioRef.current.duration;
+//     audioRef.current.currentTime = newTime;
+//   };
+
+//   return (
+//     <div className="w-full h-full flex items-center justify-center bg-gray-50">
+//       <div className="w-full max-w-md mx-4">
+//         <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden p-6">
+//           <div className="mb-4">
+//             <h3 className="text-base font-medium text-gray-900 truncate">
+//               {filename}
+//             </h3>
+//             <p className="text-sm text-gray-500">
+//               {formatTime(currentTime)} / {formatTime(duration)}
+//             </p>
+//           </div>
+
+//           {isPaid ? (
+//             <>
+//               <div className="mb-4">
+//                 <div 
+//                   className="w-full h-1 bg-gray-100 rounded-full cursor-pointer relative"
+//                   onClick={handleProgressClick}
+//                 >
+//                   <div 
+//                     className="absolute h-full rounded-full bg-black"
+//                     style={{ width: `${progress}%` }}
+//                   />
+//                 </div>
+//               </div>
+
+//               <div className="flex justify-center">
+//                 <button 
+//                   onClick={handlePlayPause}
+//                   className="p-3 rounded-full bg-black text-white hover:bg-gray-800 transition-colors duration-200"
+//                 >
+//                   {isPlaying ? (
+//                     <Pause className="w-5 h-5" />
+//                   ) : (
+//                     <Play className="w-5 h-5 ml-0.5" />
+//                   )}
+//                 </button>
+//               </div>
+//             </>
+//           ) : (
+//             <div className="space-y-3">
+//               <p className="text-sm text-gray-600">Preview Clips ({previewSegments.length})</p>
+              
+//               {previewSegments.map((segment, index) => (
+//                 <div 
+//                   key={index}
+//                   className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded-lg transition-colors"
+//                 >
+//                   <button
+//                     onClick={() => playSegment(segment)}
+//                     className="p-2 rounded-full bg-black text-white hover:bg-gray-800 transition-colors"
+//                   >
+//                     {isPlaying && currentSegment === segment ? (
+//                       <Pause className="w-4 h-4" />
+//                     ) : (
+//                       <Play className="w-4 h-4" />
+//                     )}
+//                   </button>
+                  
+//                   <div className="flex-1">
+//                     <div className="h-1 bg-gray-100 rounded-full relative">
+//                       <div 
+//                         className="absolute h-full bg-gray-300 rounded-full"
+//                         style={{ 
+//                           left: `${(segment.start / duration) * 100}%`,
+//                           width: `${(segment.duration / duration) * 100}%`
+//                         }}
+//                       />
+//                     </div>
+//                   </div>
+                  
+//                   <span className="text-xs text-gray-500 min-w-[40px]">
+//                     {formatTime(segment.start)}
+//                   </span>
+//                 </div>
+//               ))}
+
+//               <div className="flex justify-center mt-4">
+//                 <div className="text-center">
+//                   <Lock className="w-5 h-5 mx-auto mb-2 text-gray-400" />
+//                   <p className="text-sm text-gray-500">
+//                     Purchase to listen to full audio
+//                   </p>
+//                 </div>
+//               </div>
+//             </div>
+//           )}
+
+//           <audio
+//             ref={audioRef}
+//             src={url}
+//             preload="metadata"
+//             className="hidden"
+//           />
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
+
+// Audio Preview Component with Multiple Preview Segments
+// const AudioPreview = ({ url, filename, isPaid }) => {
+//   const [isPlaying, setIsPlaying] = useState(false);
+//   const [progress, setProgress] = useState(0);
+//   const [currentTime, setCurrentTime] = useState(0);
+//   const [duration, setDuration] = useState(0);
+//   const [previewSegments, setPreviewSegments] = useState([]);
+//   const [currentSegmentIndex, setCurrentSegmentIndex] = useState(0);
+//   const [hasReachedPreviewLimit, setHasReachedPreviewLimit] = useState(false);
+//   const audioRef = useRef(null);
+  
+//   const calculatePreviewSegments = (totalDuration) => {
+//     let segments = [];
+//     if (totalDuration <= 120) { // Up to 2 minutes
+//       segments = [
+//         { start: 0, duration: 5 },
+//         { start: Math.floor(totalDuration / 2) - 2.5, duration: 5 },
+//         { start: Math.max(0, totalDuration - 5), duration: 5 }
+//       ];
+//     } else if (totalDuration <= 600) { // Up to 10 minutes
+//       const interval = totalDuration / 5;
+//       segments = Array.from({ length: 5 }, (_, i) => ({
+//         start: Math.min(i * interval, totalDuration - 5),
+//         duration: 5
+//       }));
+//     } else { // More than 10 minutes
+//       const interval = totalDuration / 8;
+//       segments = Array.from({ length: 8 }, (_, i) => ({
+//         start: Math.min(i * interval, totalDuration - 5),
+//         duration: 5
+//       }));
+//     }
+//     return segments;
+//   };
+
+//   const formatTime = (time) => {
+//     const minutes = Math.floor(time / 60);
+//     const seconds = Math.floor(time % 60);
+//     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+//   };
+
+//   useEffect(() => {
+//     if (audioRef.current) {
+//       const handleTimeUpdate = () => {
+//         const current = audioRef.current.currentTime;
+//         setCurrentTime(current);
+//         setProgress((current / audioRef.current.duration) * 100);
+
+//         if (!isPaid) {
+//           // Find if we're in any preview segment
+//           const currentSegment = previewSegments.find(
+//             segment => current >= segment.start && current < segment.start + segment.duration
+//           );
+
+//           if (!currentSegment && !hasReachedPreviewLimit) {
+//             // If not in a preview segment, jump to next available segment
+//             const nextSegment = previewSegments.find(segment => segment.start > current);
+//             if (nextSegment) {
+//               audioRef.current.currentTime = nextSegment.start;
+//               setCurrentSegmentIndex(previewSegments.indexOf(nextSegment));
+//             } else {
+//               audioRef.current.pause();
+//               setIsPlaying(false);
+//               setHasReachedPreviewLimit(true);
+//             }
+//           }
+//         }
+//       };
+
+//       const handleLoadedMetadata = () => {
+//         const totalDuration = audioRef.current.duration;
+//         setDuration(totalDuration);
+//         if (!isPaid) {
+//           const segments = calculatePreviewSegments(totalDuration);
+//           setPreviewSegments(segments);
+//         }
+//       };
+
+//       audioRef.current.addEventListener('timeupdate', handleTimeUpdate);
+//       audioRef.current.addEventListener('loadedmetadata', handleLoadedMetadata);
+
+//       return () => {
+//         if (audioRef.current) {
+//           audioRef.current.removeEventListener('timeupdate', handleTimeUpdate);
+//           audioRef.current.removeEventListener('loadedmetadata', handleLoadedMetadata);
+//         }
+//       };
+//     }
+//   }, [isPaid, hasReachedPreviewLimit, previewSegments]);
+
+//   const handlePlayPause = () => {
+//     if (!isPaid && hasReachedPreviewLimit) {
+//       // Reset to first segment
+//       if (previewSegments.length > 0) {
+//         audioRef.current.currentTime = previewSegments[0].start;
+//         setCurrentSegmentIndex(0);
+//         setHasReachedPreviewLimit(false);
+//       }
+//     }
+
+//     if (isPlaying) {
+//       audioRef.current?.pause();
+//     } else {
+//       if (!isPaid && previewSegments.length > 0) {
+//         // Start from nearest preview segment
+//         const nearestSegment = previewSegments.reduce((prev, curr) => {
+//           return Math.abs(curr.start - currentTime) < Math.abs(prev.start - currentTime) ? curr : prev;
+//         });
+//         audioRef.current.currentTime = nearestSegment.start;
+//         setCurrentSegmentIndex(previewSegments.indexOf(nearestSegment));
+//       }
+//       audioRef.current?.play();
+//     }
+//     setIsPlaying(!isPlaying);
+//   };
+
+//   const handleProgressClick = (e) => {
+//     if (!isPaid) return;
+
+//     const rect = e.currentTarget.getBoundingClientRect();
+//     const x = e.clientX - rect.left;
+//     const percent = x / rect.width;
+//     const newTime = percent * audioRef.current.duration;
+//     audioRef.current.currentTime = newTime;
+//   };
+
+//   return (
+//     <div className="w-full h-full flex items-center justify-center bg-gray-50">
+//       <div className="w-full max-w-md mx-4">
+//         <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden p-6">
+//           <div className="mb-4">
+//             <h3 className="text-base font-medium text-gray-900 truncate">
+//               {filename}
+//             </h3>
+//             <p className="text-sm text-gray-500">
+//               {formatTime(currentTime)} / {formatTime(duration)}
+//             </p>
+//           </div>
+
+//           <div className="mb-4">
+//             <div 
+//               className="w-full h-1 bg-gray-100 rounded-full cursor-pointer relative"
+//               onClick={handleProgressClick}
+//             >
+//               {/* Main progress bar */}
+//               <div 
+//                 className={`absolute h-full rounded-full ${isPaid ? 'bg-black' : 'bg-gray-400'}`}
+//                 style={{ width: `${progress}%` }}
+//               />
+              
+//               {/* Preview segment markers */}
+//               {!isPaid && previewSegments.map((segment, index) => (
+//                 <div 
+//                   key={index}
+//                   className="absolute h-full w-0.5 bg-red-500"
+//                   style={{ 
+//                     left: `${(segment.start / duration) * 100}%`,
+//                   }}
+//                 />
+//               ))}
+              
+//               {/* Preview segment end markers */}
+//               {!isPaid && previewSegments.map((segment, index) => (
+//                 <div 
+//                   key={`end-${index}`}
+//                   className="absolute h-full w-0.5 bg-red-500"
+//                   style={{ 
+//                     left: `${((segment.start + segment.duration) / duration) * 100}%`,
+//                   }}
+//                 />
+//               ))}
+//             </div>
+//           </div>
+
+//           <div className="flex justify-center">
+//             <button 
+//               onClick={handlePlayPause}
+//               className={`p-3 rounded-full transition-colors duration-200 ${
+//                 !isPaid && hasReachedPreviewLimit
+//                   ? 'bg-gray-200 text-gray-400'
+//                   : 'bg-black text-white hover:bg-gray-800'
+//               }`}
+//             >
+//               {isPlaying ? (
+//                 <Pause className="w-5 h-5" />
+//               ) : (
+//                 <Play className="w-5 h-5 ml-0.5" />
+//               )}
+//             </button>
+//           </div>
+
+//           {!isPaid && (
+//             <div className="mt-4 text-center">
+//               <Lock className="w-5 h-5 mx-auto mb-2 text-gray-400" />
+//               <p className="text-sm text-gray-500">
+//                 {hasReachedPreviewLimit 
+//                   ? 'Preview ended. Purchase to continue listening.'
+//                   : `Preview available: ${previewSegments.length} segments of 5 seconds each`}
+//               </p>
+//             </div>
+//           )}
+
+//           <audio
+//             ref={audioRef}
+//             src={url}
+//             preload="metadata"
+//             className="hidden"
+//           />
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
+// Audio Preview Component with Unlimited Preview Segments
+// const AudioPreview = ({ url, filename, isPaid }) => {
+//   const [isPlaying, setIsPlaying] = useState(false);
+//   const [progress, setProgress] = useState(0);
+//   const [currentTime, setCurrentTime] = useState(0);
+//   const [duration, setDuration] = useState(0);
+//   const [previewSegments, setPreviewSegments] = useState([]);
+//   const [currentSegmentIndex, setCurrentSegmentIndex] = useState(0);
+//   const audioRef = useRef(null);
+  
+//   const PREVIEW_DURATION = 5; // Duration of each preview segment
+
+//   // Calculate total preview time available
+//   const getTotalPreviewTime = () => {
+//     return previewSegments.reduce((total, segment) => total + segment.duration, 0);
+//   };
+
+//   const calculatePreviewSegments = (totalDuration) => {
+//     let segments = [];
+//     if (totalDuration <= 120) { // Up to 2 minutes
+//       segments = [
+//         { start: 0, duration: PREVIEW_DURATION },
+//         { start: Math.floor(totalDuration / 2) - PREVIEW_DURATION/2, duration: PREVIEW_DURATION },
+//         { start: Math.max(0, totalDuration - PREVIEW_DURATION), duration: PREVIEW_DURATION }
+//       ];
+//     } else if (totalDuration <= 600) { // Up to 10 minutes
+//       const interval = totalDuration / 5;
+//       segments = Array.from({ length: 5 }, (_, i) => ({
+//         start: Math.min(i * interval, totalDuration - PREVIEW_DURATION),
+//         duration: PREVIEW_DURATION
+//       }));
+//     } else { // More than 10 minutes
+//       const interval = totalDuration / 8;
+//       segments = Array.from({ length: 8 }, (_, i) => ({
+//         start: Math.min(i * interval, totalDuration - PREVIEW_DURATION),
+//         duration: PREVIEW_DURATION
+//       }));
+//     }
+//     return segments;
+//   };
+
+//   const formatTime = (time) => {
+//     const minutes = Math.floor(time / 60);
+//     const seconds = Math.floor(time % 60);
+//     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+//   };
+
+//   const formatDuration = (seconds) => {
+//     if (seconds >= 3600) {
+//       const hours = Math.floor(seconds / 3600);
+//       const minutes = Math.floor((seconds % 3600) / 60);
+//       return `${hours}hr ${minutes}min`;
+//     }
+//     return `${Math.floor(seconds / 60)}min ${Math.floor(seconds % 60)}sec`;
+//   };
+
+//   useEffect(() => {
+//     if (audioRef.current) {
+//       const handleTimeUpdate = () => {
+//         const current = audioRef.current.currentTime;
+//         setCurrentTime(current);
+//         setProgress((current / audioRef.current.duration) * 100);
+
+//         if (!isPaid) {
+//           // Check if we're in any preview segment
+//           const isInPreviewSegment = previewSegments.some(
+//             segment => current >= segment.start && current < segment.start + segment.duration
+//           );
+
+//           if (!isInPreviewSegment) {
+//             // Find next segment
+//             const nextSegment = previewSegments.find(segment => segment.start > current);
+//             if (nextSegment) {
+//               audioRef.current.currentTime = nextSegment.start;
+//               setCurrentSegmentIndex(previewSegments.indexOf(nextSegment));
+//             } else {
+//               // Loop back to first segment
+//               audioRef.current.currentTime = previewSegments[0].start;
+//               setCurrentSegmentIndex(0);
+//             }
+//           }
+//         }
+//       };
+
+//       const handleLoadedMetadata = () => {
+//         const totalDuration = audioRef.current.duration;
+//         setDuration(totalDuration);
+//         if (!isPaid) {
+//           const segments = calculatePreviewSegments(totalDuration);
+//           setPreviewSegments(segments);
+//         }
+//       };
+
+//       audioRef.current.addEventListener('timeupdate', handleTimeUpdate);
+//       audioRef.current.addEventListener('loadedmetadata', handleLoadedMetadata);
+
+//       return () => {
+//         if (audioRef.current) {
+//           audioRef.current.removeEventListener('timeupdate', handleTimeUpdate);
+//           audioRef.current.removeEventListener('loadedmetadata', handleLoadedMetadata);
+//         }
+//       };
+//     }
+//   }, [isPaid, previewSegments]);
+
+//   const handlePlayPause = () => {
+//     if (isPlaying) {
+//       audioRef.current?.pause();
+//     } else {
+//       if (!isPaid && previewSegments.length > 0) {
+//         // Start from nearest preview segment
+//         const nearestSegment = previewSegments.reduce((prev, curr) => {
+//           return Math.abs(curr.start - currentTime) < Math.abs(prev.start - currentTime) ? curr : prev;
+//         });
+//         audioRef.current.currentTime = nearestSegment.start;
+//         setCurrentSegmentIndex(previewSegments.indexOf(nearestSegment));
+//       }
+//       audioRef.current?.play();
+//     }
+//     setIsPlaying(!isPlaying);
+//   };
+
+//   const handleProgressClick = (e) => {
+//     if (!isPaid) return;
+
+//     const rect = e.currentTarget.getBoundingClientRect();
+//     const x = e.clientX - rect.left;
+//     const percent = x / rect.width;
+//     const newTime = percent * audioRef.current.duration;
+//     audioRef.current.currentTime = newTime;
+//   };
+
+//   return (
+//     <div className="w-full h-full flex items-center justify-center bg-gray-50">
+//       <div className="w-full max-w-md mx-4">
+//         <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden p-6">
+//           <div className="mb-4">
+//             <h3 className="text-base font-medium text-gray-900 truncate">
+//               {filename}
+//             </h3>
+//             <div className="flex justify-between text-sm text-gray-500">
+//               <span>{formatTime(currentTime)} / {formatTime(duration)}</span>
+//               {!isPaid && (
+//                 <span>Total Length: {formatDuration(duration)}</span>
+//               )}
+//             </div>
+//           </div>
+
+//           <div className="mb-4">
+//             <div 
+//               className="w-full h-1 bg-gray-100 rounded-full cursor-pointer relative"
+//               onClick={handleProgressClick}
+//             >
+//               {/* Main progress bar */}
+//               <div 
+//                 className={`absolute h-full rounded-full ${isPaid ? 'bg-black' : 'bg-gray-400'}`}
+//                 style={{ width: `${progress}%` }}
+//               />
+              
+//               {/* Preview segment markers */}
+//               {!isPaid && previewSegments.map((segment, index) => (
+//                 <React.Fragment key={index}>
+//                   {/* Start marker */}
+//                   <div 
+//                     className="absolute h-full w-0.5 bg-red-500"
+//                     style={{ left: `${(segment.start / duration) * 100}%` }}
+//                   />
+//                   {/* End marker */}
+//                   <div 
+//                     className="absolute h-full w-0.5 bg-red-500"
+//                     style={{ left: `${((segment.start + segment.duration) / duration) * 100}%` }}
+//                   />
+//                   {/* Preview section highlight */}
+//                   <div 
+//                     className="absolute h-full bg-red-100"
+//                     style={{ 
+//                       left: `${(segment.start / duration) * 100}%`,
+//                       width: `${(segment.duration / duration) * 100}%`
+//                     }}
+//                   />
+//                 </React.Fragment>
+//               ))}
+//             </div>
+//           </div>
+
+//           <div className="flex justify-center">
+//             <button 
+//               onClick={handlePlayPause}
+//               className="p-3 rounded-full bg-black text-white hover:bg-gray-800 transition-colors duration-200"
+//             >
+//               {isPlaying ? (
+//                 <Pause className="w-5 h-5" />
+//               ) : (
+//                 <Play className="w-5 h-5 ml-0.5" />
+//               )}
+//             </button>
+//           </div>
+
+//           {!isPaid && (
+//             <div className="mt-4 text-center">
+//               <Lock className="w-5 h-5 mx-auto mb-2 text-gray-400" />
+//               <p className="text-sm text-gray-500">
+//                 Preview available: {previewSegments.length} segments ({formatDuration(getTotalPreviewTime())})
+//               </p>
+//               <p className="text-xs text-gray-400 mt-1">
+//                 Purchase to unlock full {formatDuration(duration)} audio
+//               </p>
+//             </div>
+//           )}
+
+//           <audio
+//             ref={audioRef}
+//             src={url}
+//             preload="metadata"
+//             className="hidden"
+//           />
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
+// Audio Preview Component with Unlimited Preview Segments
+// const AudioPreview = ({ url, filename, isPaid }) => {
+//   const [isPlaying, setIsPlaying] = useState(false);
+//   const [progress, setProgress] = useState(0);
+//   const [currentTime, setCurrentTime] = useState(0);
+//   const [duration, setDuration] = useState(0);
+//   const [previewSegments, setPreviewSegments] = useState([]);
+//   const [currentSegmentIndex, setCurrentSegmentIndex] = useState(0);
+//   const audioRef = useRef(null);
+  
+//   const PREVIEW_DURATION = 5; // Duration of each preview segment
+
+//   // Calculate total preview time available
+//   const getTotalPreviewTime = () => {
+//     return previewSegments.reduce((total, segment) => total + segment.duration, 0);
+//   };
+
+//   const calculatePreviewSegments = (totalDuration) => {
+//     let segments = [];
+//     if (totalDuration <= 120) { // Up to 2 minutes
+//       segments = [
+//         { start: 0, duration: PREVIEW_DURATION },
+//         { start: Math.floor(totalDuration / 2) - PREVIEW_DURATION/2, duration: PREVIEW_DURATION },
+//         { start: Math.max(0, totalDuration - PREVIEW_DURATION), duration: PREVIEW_DURATION }
+//       ];
+//     } else if (totalDuration <= 600) { // Up to 10 minutes
+//       const interval = totalDuration / 5;
+//       segments = Array.from({ length: 5 }, (_, i) => ({
+//         start: Math.min(i * interval, totalDuration - PREVIEW_DURATION),
+//         duration: PREVIEW_DURATION
+//       }));
+//     } else { // More than 10 minutes
+//       const interval = totalDuration / 8;
+//       segments = Array.from({ length: 8 }, (_, i) => ({
+//         start: Math.min(i * interval, totalDuration - PREVIEW_DURATION),
+//         duration: PREVIEW_DURATION
+//       }));
+//     }
+//     return segments;
+//   };
+
+//   const formatTime = (time) => {
+//     const minutes = Math.floor(time / 60);
+//     const seconds = Math.floor(time % 60);
+//     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+//   };
+
+//   const formatDuration = (seconds) => {
+//     if (seconds >= 3600) {
+//       const hours = Math.floor(seconds / 3600);
+//       const minutes = Math.floor((seconds % 3600) / 60);
+//       return `${hours}hr ${minutes}min`;
+//     }
+//     return `${Math.floor(seconds / 60)}min ${Math.floor(seconds % 60)}sec`;
+//   };
+
+//   useEffect(() => {
+//     if (audioRef.current) {
+//       const handleTimeUpdate = () => {
+//         const current = audioRef.current.currentTime;
+//         setCurrentTime(current);
+//         setProgress((current / audioRef.current.duration) * 100);
+
+//         if (!isPaid) {
+//           // Check if we're in any preview segment
+//           const isInPreviewSegment = previewSegments.some(
+//             segment => current >= segment.start && current < segment.start + segment.duration
+//           );
+
+//           if (!isInPreviewSegment) {
+//             // Find next segment
+//             const nextSegment = previewSegments.find(segment => segment.start > current);
+//             if (nextSegment) {
+//               audioRef.current.currentTime = nextSegment.start;
+//               setCurrentSegmentIndex(previewSegments.indexOf(nextSegment));
+//             } else {
+//               // Loop back to first segment
+//               audioRef.current.currentTime = previewSegments[0].start;
+//               setCurrentSegmentIndex(0);
+//             }
+//           }
+//         }
+//       };
+
+//       const handleLoadedMetadata = () => {
+//         const totalDuration = audioRef.current.duration;
+//         setDuration(totalDuration);
+//         if (!isPaid) {
+//           const segments = calculatePreviewSegments(totalDuration);
+//           setPreviewSegments(segments);
+//         }
+//       };
+
+//       audioRef.current.addEventListener('timeupdate', handleTimeUpdate);
+//       audioRef.current.addEventListener('loadedmetadata', handleLoadedMetadata);
+
+//       return () => {
+//         if (audioRef.current) {
+//           audioRef.current.removeEventListener('timeupdate', handleTimeUpdate);
+//           audioRef.current.removeEventListener('loadedmetadata', handleLoadedMetadata);
+//         }
+//       };
+//     }
+//   }, [isPaid, previewSegments]);
+
+//   const handlePlayPause = () => {
+//     if (isPlaying) {
+//       audioRef.current?.pause();
+//     } else {
+//       if (!isPaid && previewSegments.length > 0) {
+//         // Start from nearest preview segment
+//         const nearestSegment = previewSegments.reduce((prev, curr) => {
+//           return Math.abs(curr.start - currentTime) < Math.abs(prev.start - currentTime) ? curr : prev;
+//         });
+//         audioRef.current.currentTime = nearestSegment.start;
+//         setCurrentSegmentIndex(previewSegments.indexOf(nearestSegment));
+//       }
+//       audioRef.current?.play();
+//     }
+//     setIsPlaying(!isPlaying);
+//   };
+
+//   const handleProgressClick = (e) => {
+//     if (!isPaid) return;
+
+//     const rect = e.currentTarget.getBoundingClientRect();
+//     const x = e.clientX - rect.left;
+//     const percent = x / rect.width;
+//     const newTime = percent * audioRef.current.duration;
+//     audioRef.current.currentTime = newTime;
+//   };
+
+//   return (
+//     <div className="w-full h-full flex items-center justify-center bg-gray-50">
+//       <div className="w-full max-w-md mx-4">
+//         <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden p-6">
+//           <div className="mb-4">
+//             <h3 className="text-base font-medium text-gray-900 truncate">
+//               {filename}
+//             </h3>
+//             <div className="flex justify-between text-sm text-gray-500">
+//               <span>{formatTime(currentTime)} / {formatTime(duration)}</span>
+//               {!isPaid && (
+//                 <span>Total Length: {formatDuration(duration)}</span>
+//               )}
+//             </div>
+//           </div>
+
+//           <div className="mb-4">
+//             <div 
+//               className="w-full h-2 bg-gray-200 rounded-full cursor-pointer relative overflow-hidden"
+//               onClick={handleProgressClick}
+//             >
+//               {/* Preview segments (red background) */}
+//               {!isPaid && previewSegments.map((segment, index) => (
+//                 <div 
+//                   key={index}
+//                   className="absolute h-full bg-red-500"
+//                   style={{ 
+//                     left: `${(segment.start / duration) * 100}%`,
+//                     width: `${(segment.duration / duration) * 100}%`
+//                   }}
+//                 />
+//               ))}
+              
+//               {/* Playback progress (green overlay) */}
+//               <div 
+//                 className={`absolute h-full ${isPaid ? 'bg-black' : 'bg-green-500'}`}
+//                 style={{ width: `${progress}%` }}
+//               />
+//             </div>
+//           </div>
+
+//           <div className="flex justify-center">
+//             <button 
+//               onClick={handlePlayPause}
+//               className="p-3 rounded-full bg-black text-white hover:bg-gray-800 transition-colors duration-200"
+//             >
+//               {isPlaying ? (
+//                 <Pause className="w-5 h-5" />
+//               ) : (
+//                 <Play className="w-5 h-5 ml-0.5" />
+//               )}
+//             </button>
+//           </div>
+
+//           {!isPaid && (
+//             <div className="mt-4 text-center">
+//               <Lock className="w-5 h-5 mx-auto mb-2 text-gray-400" />
+//               <p className="text-sm text-gray-500">
+//                 Preview available: {previewSegments.length} segments ({formatDuration(getTotalPreviewTime())})
+//               </p>
+//               <p className="text-xs text-gray-400 mt-1">
+//                 Purchase to unlock full {formatDuration(duration)} audio
+//               </p>
+//             </div>
+//           )}
+
+//           <audio
+//             ref={audioRef}
+//             src={url}
+//             preload="metadata"
+//             className="hidden"
+//           />
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
+
+// Audio Preview Component with Unlimited Preview Segments
 const AudioPreview = ({ url, filename, isPaid }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [hasReachedPreviewLimit, setHasReachedPreviewLimit] = useState(false);
+  const [previewSegments, setPreviewSegments] = useState([]);
+  const [currentSegmentIndex, setCurrentSegmentIndex] = useState(0);
   const audioRef = useRef(null);
   
-  const PREVIEW_DURATION = 5; // Preview duration in seconds
+  const PREVIEW_DURATION = 5; // Duration of each preview segment
+
+  // Calculate total preview time available
+  const getTotalPreviewTime = () => {
+    return previewSegments.reduce((total, segment) => total + segment.duration, 0);
+  };
+
+  const calculatePreviewSegments = (totalDuration) => {
+    let segments = [];
+    if (totalDuration <= 120) { // Up to 2 minutes
+      segments = [
+        { start: 0, duration: PREVIEW_DURATION },
+        { start: Math.floor(totalDuration / 2) - PREVIEW_DURATION/2, duration: PREVIEW_DURATION },
+        { start: Math.max(0, totalDuration - PREVIEW_DURATION), duration: PREVIEW_DURATION }
+      ];
+    } else if (totalDuration <= 600) { // Up to 10 minutes
+      const interval = totalDuration / 5;
+      segments = Array.from({ length: 5 }, (_, i) => ({
+        start: Math.min(i * interval, totalDuration - PREVIEW_DURATION),
+        duration: PREVIEW_DURATION
+      }));
+    } else { // More than 10 minutes
+      const interval = totalDuration / 8;
+      segments = Array.from({ length: 8 }, (_, i) => ({
+        start: Math.min(i * interval, totalDuration - PREVIEW_DURATION),
+        duration: PREVIEW_DURATION
+      }));
+    }
+    return segments;
+  };
 
   const formatTime = (time) => {
     const minutes = Math.floor(time / 60);
     const seconds = Math.floor(time % 60);
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
+
+  const formatDuration = (seconds) => {
+    if (seconds >= 3600) {
+      const hours = Math.floor(seconds / 3600);
+      const minutes = Math.floor((seconds % 3600) / 60);
+      return `${hours}hr ${minutes}min`;
+    }
+    return `${Math.floor(seconds / 60)}min ${Math.floor(seconds % 60)}sec`;
   };
 
   useEffect(() => {
@@ -203,15 +1261,34 @@ const AudioPreview = ({ url, filename, isPaid }) => {
         setCurrentTime(current);
         setProgress((current / audioRef.current.duration) * 100);
 
-        if (!isPaid && current >= PREVIEW_DURATION && !hasReachedPreviewLimit) {
-          audioRef.current.pause();
-          setIsPlaying(false);
-          setHasReachedPreviewLimit(true);
+        if (!isPaid) {
+          // Check if we're in any preview segment
+          const isInPreviewSegment = previewSegments.some(
+            segment => current >= segment.start && current < segment.start + segment.duration
+          );
+
+          if (!isInPreviewSegment) {
+            // Find next segment
+            const nextSegment = previewSegments.find(segment => segment.start > current);
+            if (nextSegment) {
+              audioRef.current.currentTime = nextSegment.start;
+              setCurrentSegmentIndex(previewSegments.indexOf(nextSegment));
+            } else {
+              // Loop back to first segment
+              audioRef.current.currentTime = previewSegments[0].start;
+              setCurrentSegmentIndex(0);
+            }
+          }
         }
       };
 
       const handleLoadedMetadata = () => {
-        setDuration(audioRef.current.duration);
+        const totalDuration = audioRef.current.duration;
+        setDuration(totalDuration);
+        if (!isPaid) {
+          const segments = calculatePreviewSegments(totalDuration);
+          setPreviewSegments(segments);
+        }
       };
 
       audioRef.current.addEventListener('timeupdate', handleTimeUpdate);
@@ -224,18 +1301,19 @@ const AudioPreview = ({ url, filename, isPaid }) => {
         }
       };
     }
-  }, [isPaid, hasReachedPreviewLimit]);
+  }, [isPaid, previewSegments]);
 
   const handlePlayPause = () => {
-    if (!isPaid && hasReachedPreviewLimit) {
-      return;
-    }
-
     if (isPlaying) {
       audioRef.current?.pause();
     } else {
-      if (!isPaid && currentTime >= PREVIEW_DURATION) {
-        audioRef.current.currentTime = 0;
+      if (!isPaid && previewSegments.length > 0) {
+        // Start from nearest preview segment
+        const nearestSegment = previewSegments.reduce((prev, curr) => {
+          return Math.abs(curr.start - currentTime) < Math.abs(prev.start - currentTime) ? curr : prev;
+        });
+        audioRef.current.currentTime = nearestSegment.start;
+        setCurrentSegmentIndex(previewSegments.indexOf(nearestSegment));
       }
       audioRef.current?.play();
     }
@@ -260,31 +1338,47 @@ const AudioPreview = ({ url, filename, isPaid }) => {
             <h3 className="text-base font-medium text-gray-900 truncate">
               {filename}
             </h3>
-            <p className="text-sm text-gray-500">
-              {formatTime(currentTime)} / {formatTime(isPaid ? duration : PREVIEW_DURATION)}
-            </p>
+            <div className="flex justify-between text-sm text-gray-500">
+              <span>{formatTime(currentTime)} / {formatTime(duration)}</span>
+              {!isPaid && (
+                <span>Total Length: {formatDuration(duration)}</span>
+              )}
+            </div>
           </div>
 
           <div className="mb-4">
             <div 
-              className="w-full h-1 bg-gray-100 rounded-full cursor-pointer relative"
+              className="w-full h-2 bg-gray-200 rounded-full cursor-pointer relative overflow-hidden"
               onClick={handleProgressClick}
             >
-              <div 
-                className={`absolute h-full rounded-full ${
-                  isPaid ? 'bg-black' : 'bg-gray-400'
-                }`}
-                style={{ 
-                  width: `${isPaid ? progress : Math.min(progress, (PREVIEW_DURATION/duration) * 100)}%`
-                }}
-              />
-              {!isPaid && (
+              {!isPaid ? (
+                // Preview segments with playback indication
+                previewSegments.map((segment, index) => {
+                  const segmentStart = (segment.start / duration) * 100;
+                  const segmentWidth = (segment.duration / duration) * 100;
+                  const progressPercent = (currentTime / duration) * 100;
+                  
+                  return (
+                    <div 
+                      key={index}
+                      className="absolute h-full"
+                      style={{ 
+                        left: `${segmentStart}%`,
+                        width: `${segmentWidth}%`,
+                        backgroundColor: progressPercent >= segmentStart && progressPercent <= (segmentStart + segmentWidth)
+                          ? '#22c55e' // green-500
+                          : progressPercent > (segmentStart + segmentWidth)
+                            ? '#22c55e' // green-500
+                            : '#ef4444' // red-500
+                      }}
+                    />
+                  );
+                })
+              ) : (
+                // Full playback progress for paid version
                 <div 
-                  className="absolute h-full w-1 bg-red-500"
-                  style={{ 
-                    left: `${(PREVIEW_DURATION/duration) * 100}%`,
-                    display: duration ? 'block' : 'none'
-                  }}
+                  className="absolute h-full bg-black"
+                  style={{ width: `${progress}%` }}
                 />
               )}
             </div>
@@ -293,12 +1387,7 @@ const AudioPreview = ({ url, filename, isPaid }) => {
           <div className="flex justify-center">
             <button 
               onClick={handlePlayPause}
-              disabled={!isPaid && hasReachedPreviewLimit}
-              className={`p-3 rounded-full transition-colors duration-200 ${
-                !isPaid && hasReachedPreviewLimit
-                  ? 'bg-gray-200 text-gray-400'
-                  : 'bg-black text-white hover:bg-gray-800'
-              }`}
+              className="p-3 rounded-full bg-black text-white hover:bg-gray-800 transition-colors duration-200"
             >
               {isPlaying ? (
                 <Pause className="w-5 h-5" />
@@ -312,9 +1401,10 @@ const AudioPreview = ({ url, filename, isPaid }) => {
             <div className="mt-4 text-center">
               <Lock className="w-5 h-5 mx-auto mb-2 text-gray-400" />
               <p className="text-sm text-gray-500">
-                {hasReachedPreviewLimit 
-                  ? 'Preview limit reached. Purchase to continue listening.'
-                  : `Preview available: First ${PREVIEW_DURATION} seconds`}
+                Preview available: {previewSegments.length} segments ({formatDuration(getTotalPreviewTime())})
+              </p>
+              <p className="text-xs text-gray-400 mt-1">
+                Purchase to unlock full {formatDuration(duration)} audio
               </p>
             </div>
           )}
@@ -330,7 +1420,6 @@ const AudioPreview = ({ url, filename, isPaid }) => {
     </div>
   );
 };
-
 const MediaViewer = ({ 
   currentFile, 
   currentDelivery, 
