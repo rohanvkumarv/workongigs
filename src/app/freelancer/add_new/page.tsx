@@ -955,8 +955,8 @@ const AddNewPage = () => {
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Create New Client</h1>
-        <p className="text-gray-600 mb-6 md:mb-8">Set up your client details and delivery information</p>
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Create New Client and First Delivery</h1>
+        <p className="text-gray-600 mb-6 md:mb-8">Enter the details of your new client and their first delivery. </p>
 
         {/* File Upload Section */}
         <div className="mb-6 md:mb-8">
