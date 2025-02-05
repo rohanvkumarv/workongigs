@@ -1697,15 +1697,15 @@ const PreviewPayment = () => {
   });
 
   // Initialize Razorpay
-  const initializeRazorpay = () => {
-    return new Promise((resolve) => {
-      const script = document.createElement("script");
-      script.src = "https://checkout.razorpay.com/v1/checkout.js";
-      script.async = true;
-      script.onload = () => resolve(true);
-      document.body.appendChild(script);
-    });
-  };
+  // const initializeRazorpay = () => {
+  //   return new Promise((resolve) => {
+  //     const script = document.createElement("script");
+  //     script.src = "https://checkout.razorpay.com/v1/checkout.js";
+  //     script.async = true;
+  //     script.onload = () => resolve(true);
+  //     document.body.appendChild(script);
+  //   });
+  // };
 
     
     // Fetch client data
@@ -1829,6 +1829,136 @@ const PreviewPayment = () => {
     };
   
     // Payment handler
+    // const handlePayment = async (amount, deliveryId = null, payAllDeliveries = false) => {
+    //   try {
+    //     setPaymentStatus({
+    //       show: true,
+    //       status: 'processing',
+    //       message: 'Initializing payment...'
+    //     });
+  
+    //     await initializeRazorpay();
+  
+    //     const response = await fetch("/api/create-order", {
+    //       method: "POST",
+    //       headers: { "Content-Type": "application/json" },
+    //       body: JSON.stringify({ amount }),
+    //     });
+  
+    //     const data = await response.json();
+  
+    //     const options = {
+    //       key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+    //       amount: data.amount,
+    //       currency: data.currency,
+    //       name: "Delivery Payment",
+    //       description: payAllDeliveries ? "All Deliveries Payment" : "Single Delivery Payment",
+    //       order_id: data.id,
+    //       handler: async (res) => {
+    //         setPaymentStatus({
+    //           show: true,
+    //           status: 'processing',
+    //           message: 'Verifying payment...'
+    //         });
+  
+    //         try {
+    //           const verifyResponse = await fetch("/api/verify-payment", {
+    //             method: "POST",
+    //             headers: { "Content-Type": "application/json" },
+    //             body: JSON.stringify({
+    //               razorpay_order_id: res.razorpay_order_id,
+    //               razorpay_payment_id: res.razorpay_payment_id,
+    //               razorpay_signature: res.razorpay_signature,
+    //               deliveryId,
+    //               clientId,
+    //               payAllDeliveries
+    //             }),
+    //           });
+  
+    //           const result = await verifyResponse.json();
+  
+    //           if (result.success) {
+    //             const updatedDeliveries = [...clientData.deliveries];
+                
+    //             if (payAllDeliveries) {
+    //               updatedDeliveries.forEach(delivery => {
+    //                 if (delivery.paymentStatus === "Not Paid") {
+    //                   delivery.paymentStatus = "Paid";
+    //                 }
+    //               });
+    //             } else {
+    //               const index = updatedDeliveries.findIndex(d => d.id === deliveryId);
+    //               if (index !== -1) {
+    //                 updatedDeliveries[index].paymentStatus = "Paid";
+    //               }
+    //             }
+                
+    //             setClientData({ ...clientData, deliveries: updatedDeliveries });
+                
+    //             setPaymentStatus({
+    //               show: true,
+    //               status: 'success',
+    //               message: 'Payment successful! Access granted to your files.'
+    //             });
+  
+    //             setTimeout(() => {
+    //               setPaymentStatus(prev => ({ ...prev, show: false }));
+    //             }, 5000);
+    //           } else {
+    //             throw new Error('Payment verification failed');
+    //           }
+    //         } catch (error) {
+    //           setPaymentStatus({
+    //             show: true,
+    //             status: 'error',
+    //             message: 'Payment verification failed. Please contact support.'
+    //           });
+    //         }
+    //       },
+    //       theme: {
+    //         color: "#000000",
+    //       },
+    //     };
+  
+    //     const paymentObject = new window.Razorpay(options);
+    //     paymentObject.open();
+    //   } catch (error) {
+    //     console.error("Payment error:", error);
+    //     setPaymentStatus({
+    //       show: true,
+    //       status: 'error',
+    //       message: 'Payment failed. Please try again.'
+    //     });
+    //   }
+    // };
+    const initializeRazorpay = () => {
+      return new Promise((resolve, reject) => {
+        const script = document.createElement("script");
+        script.src = "https://checkout.razorpay.com/v1/checkout.js";
+        script.async = true;
+        
+        script.onload = () => {
+          console.log("Razorpay SDK loaded successfully");
+          resolve(true);
+        };
+    
+        script.onerror = (error) => {
+          console.error("Razorpay SDK failed to load:", error);
+          reject(new Error("Failed to load Razorpay SDK"));
+        };
+    
+        // Check if script already exists
+        if (document.querySelector('script[src="https://checkout.razorpay.com/v1/checkout.js"]')) {
+          console.log("Razorpay SDK already loaded");
+          resolve(true);
+          return;
+        }
+    
+        document.body.appendChild(script);
+      });
+    };
+    
+    // Payment handler
     const handlePayment = async (amount, deliveryId = null, payAllDeliveries = false) => {
       try {
         setPaymentStatus({
@@ -1836,17 +1966,19 @@ const PreviewPayment = () => {
           status: 'processing',
           message: 'Initializing payment...'
         });
-  
+    
         await initializeRazorpay();
-  
+        console.log("Creating order with amount:", amount);
+    
         const response = await fetch("/api/create-order", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ amount }),
         });
-  
+    
         const data = await response.json();
-  
+        console.log("Order creation response:", data);
+    
         const options = {
           key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
           amount: data.amount,
@@ -1855,28 +1987,36 @@ const PreviewPayment = () => {
           description: payAllDeliveries ? "All Deliveries Payment" : "Single Delivery Payment",
           order_id: data.id,
           handler: async (res) => {
+            console.log("Full Razorpay response:", res);
+            
             setPaymentStatus({
               show: true,
               status: 'processing',
               message: 'Verifying payment...'
             });
-  
+    
             try {
+              const verificationData = {
+                razorpay_order_id: res.razorpay_order_id,
+                razorpay_payment_id: res.razorpay_payment_id,
+                razorpay_signature: res.razorpay_signature,
+                deliveryId,
+                clientId,
+                payAllDeliveries
+              };
+              
+              console.log("Sending verification data:", verificationData);
+    
               const verifyResponse = await fetch("/api/verify-payment", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  razorpay_order_id: res.razorpay_order_id,
-                  razorpay_payment_id: res.razorpay_payment_id,
-                  razorpay_signature: res.razorpay_signature,
-                  deliveryId,
-                  clientId,
-                  payAllDeliveries
-                }),
+                body: JSON.stringify(verificationData),
               });
-  
+    
+              console.log("Verification API response status:", verifyResponse.status);
               const result = await verifyResponse.json();
-  
+              console.log("Verification API response:", result);
+    
               if (result.success) {
                 const updatedDeliveries = [...clientData.deliveries];
                 
@@ -1900,14 +2040,16 @@ const PreviewPayment = () => {
                   status: 'success',
                   message: 'Payment successful! Access granted to your files.'
                 });
-  
+    
                 setTimeout(() => {
                   setPaymentStatus(prev => ({ ...prev, show: false }));
                 }, 5000);
               } else {
+                console.error("Payment verification failed:", result);
                 throw new Error('Payment verification failed');
               }
             } catch (error) {
+              console.error("Verification error:", error);
               setPaymentStatus({
                 show: true,
                 status: 'error',
@@ -1915,15 +2057,46 @@ const PreviewPayment = () => {
               });
             }
           },
+          prefill: {
+            name: "Customer",
+            email: "customer@example.com",
+          },
+          modal: {
+            ondismiss: function() {
+              console.log("Payment modal dismissed");
+              setPaymentStatus({
+                show: true,
+                status: 'error',
+                message: 'Payment cancelled.'
+              });
+              setTimeout(() => {
+                setPaymentStatus(prev => ({ ...prev, show: false }));
+              }, 3000);
+            }
+          },
           theme: {
             color: "#000000",
           },
         };
-  
+    
+        console.log("Initializing Razorpay with options:", {
+          ...options,
+          key: "HIDDEN" // Hide sensitive data
+        });
+    
         const paymentObject = new window.Razorpay(options);
+        paymentObject.on('payment.failed', function (response) {
+          console.log("Payment failed response:", response);
+          setPaymentStatus({
+            show: true,
+            status: 'error',
+            message: 'Payment failed. Please try again.'
+          });
+        });
+        
         paymentObject.open();
       } catch (error) {
-        console.error("Payment error:", error);
+        console.error("Payment initialization error:", error);
         setPaymentStatus({
           show: true,
           status: 'error',
