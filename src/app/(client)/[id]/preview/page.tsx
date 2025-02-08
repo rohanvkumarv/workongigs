@@ -1957,6 +1957,14 @@ const PreviewPayment = () => {
         document.body.appendChild(script);
       });
     };
+      const handleDownloadDelivery = async (files) => {
+          setDownloading(true);
+          try {
+            await downloadAllFiles(files);
+          } finally {
+            setDownloading(false);
+          }
+        };
     
     // Payment handler
     const handlePayment = async (amount, deliveryId = null, payAllDeliveries = false) => {
