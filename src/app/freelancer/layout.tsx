@@ -35,7 +35,15 @@ import Sidebar from "./_components/Sidebar";
 
 import { AuthProvider } from '@/context/authContext';
 
-
+export const metadata = {
+  title: "WorkOnGigs",
+  description: "Future Of Freelancing",
+  icons: {
+    icon: 'favicon-32x32.png', // /public/icon.png
+    // shortcut: '/shortcut-icon.png', // /public/shortcut-icon.png
+   
+  },
+};
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (

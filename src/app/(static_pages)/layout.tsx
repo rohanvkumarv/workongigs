@@ -9,8 +9,13 @@ import { AuthProvider } from '@/context/authContext';
 
 
 export const metadata = {
-  title: "My Next.js App",
-  description: "A sample Next.js application",
+  title: "WorkOnGigs",
+  description: "Future Of Freelancing",
+  icons: {
+    icon: 'favicon-32x32.png', // /public/icon.png
+    // shortcut: '/shortcut-icon.png', // /public/shortcut-icon.png
+   
+  },
 };
 
 export default function RootLayout({
