@@ -176,7 +176,7 @@ const ClientsPage = () => {
             <div className="text-sm font-medium text-gray-500">Mode of Pay</div>
             <div className="text-sm font-medium text-gray-500">Status</div>
             <div className="text-sm font-medium text-gray-500 text-center">Preview Link</div>
-            <div className="text-sm font-medium text-gray-500 text-center">View Client</div>
+            {/* <div className="text-sm font-medium text-gray-500 text-center">View Client</div> */}
           </div>
         </div>
 
@@ -189,7 +189,8 @@ const ClientsPage = () => {
             filteredClients.map((client) => (
               <div 
                 key={client.id}
-                className="px-4 md:px-6 py-4 hover:bg-gray-50/50 transition-all group"
+                onClick={() => window.location.href = `/freelancer/clients/${client.id}`}
+                className="px-4 md:px-6 py-4 hover:bg-gray-50/50 transition-all group cursor-pointer"
               >
                 {/* Mobile view */}
                 <div className="md:hidden space-y-3">
@@ -255,7 +256,7 @@ const ClientsPage = () => {
                       </div>
                     </button>
                   </div>
-                  <div className="flex items-center justify-center">
+                  {/* <div className="flex items-center justify-center">
                     <button 
                       onClick={() => window.location.href = `/freelancer/clients/${client.id}`}
                       className="p-2 bg-white hover:bg-gray-50 rounded-lg transition-all relative border border-gray-200 shadow-sm group/view"
@@ -267,7 +268,7 @@ const ClientsPage = () => {
                         </div>
                       </div>
                     </button>
-                    </div>
+                    </div> */}
                 </div>
               </div>
             ))

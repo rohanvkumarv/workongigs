@@ -605,7 +605,7 @@ const AddNewDelivery = () => {
       if (!response.ok) throw new Error(result.error);
 
       if (result.success && result.delivery?.id) {
-        const link = `/${selectedClient.id}/preview`;
+        const link = `/${selectedClient.id}/preview?delivery=${result.delivery.name}`;
         setDeliveryLink(window.location.origin + link);
         setShowSuccessModal(true);
       }

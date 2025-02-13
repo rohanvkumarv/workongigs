@@ -936,7 +936,7 @@ const AddNewPage = () => {
       if (!response.ok) throw new Error(result.error);
 
       if (result.success && result.client?.id) {
-        const link = `/${result.client.id}/preview`;
+        const link = `/${result.client.id}/preview?delivery=${result.delivery.name}`;
         setClientLink(window.location.origin + link);
         setShowSuccessModal(true);
         console.log("Setting modal to true", showSuccessModal);
