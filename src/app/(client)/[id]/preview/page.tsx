@@ -1859,6 +1859,9 @@ const PreviewPayment = () => {
             const result = await verifyResponse.json();
 
             if (result.success) {
+              // Store current delivery ID to maintain selection
+              const currentDeliveryId = clientData.deliveries[selectedDelivery].id;
+              
               const updatedDeliveries = [...clientData.deliveries];
               
               if (payAllDeliveries) {
@@ -1876,11 +1879,23 @@ const PreviewPayment = () => {
               
               setClientData({ ...clientData, deliveries: updatedDeliveries });
               
+              // Keep the current delivery selected
+              const updatedDeliveryIndex = updatedDeliveries.findIndex(d => d.id === currentDeliveryId);
+              if (updatedDeliveryIndex !== -1) {
+                setSelectedDelivery(updatedDeliveryIndex);
+              }
+              
               setPaymentStatus({
                 show: true,
                 status: 'success',
                 message: 'Payment successful! Access granted to your files.'
               });
+
+              // Update URL to reflect current delivery (in case it was changed)
+              const currentDelivery = updatedDeliveries[updatedDeliveryIndex];
+              const newDeliveryName = encodeURIComponent(currentDelivery.name);
+              const newUrl = `/${clientId}/preview?delivery=${newDeliveryName}`;
+              window.history.replaceState({ ...window.history.state, as: newUrl, url: newUrl }, '', newUrl);
 
               setTimeout(() => {
                 setPaymentStatus(prev => ({ ...prev, show: false }));
