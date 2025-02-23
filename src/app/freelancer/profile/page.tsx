@@ -1,64 +1,118 @@
-// // "use client"
-// // import React, { useState } from 'react';
-// // import { User, Edit2, BellRing, ChevronRight } from 'lucide-react';
 
+
+// // "use client"
+// // import React, { useState, useEffect } from 'react';
+// // import { User, Edit2, BellRing, ChevronRight } from 'lucide-react';
 // // import { useAuth } from '@/context/authContext';
 
 // // const ProfileContent = () => {
-// //   import { useAuth } from '@/context/authContext';
-// //   import { useState, useEffect } from 'react';
+// //   const { freelancerId, email, isAuthenticated, isLoading, logout } = useAuth();
+  
+// //   const [userData, setUserData] = useState({
+// //     name: '',
+// //     mobile: '',
+// //     email: '',
+// //     city: '',
+// //     country: '',
+// //     pincode: '',
+// //     profession: ''
+// //   });
 
-// //   const ProfileContent = () => {
-// //     const { freelancerId, email, isAuthenticated, isLoading, logout } = useAuth();
-    
-// //     const [userData, setUserData] = useState({
-// //       name: '',
-// //       number: '',
-// //       gmail: '',
-// //       city: '',
-// //       country: '',
-// //       pincode: '',
-// //       profession: ''
-// //     });
+// //   const [isEditing, setIsEditing] = useState(false);
+// //   const [editedData, setEditedData] = useState(userData);
+// //   const [error, setError] = useState('');
+// //   const [success, setSuccess] = useState('');
 
-// //     useEffect(() => {
-// //       const fetchDetails = async () => {
-// //         if (freelancerId) {
-// //           try {
-// //             const response = await fetch('/api/freelancer/get-details', {
-// //               method: 'POST',
-// //               headers: {
-// //                 'Content-Type': 'application/json'
-// //               },
-// //               body: JSON.stringify({ freelancerId })
-// //             });
-// //             if (!response.ok) {
-// //               throw new Error('Network response was not ok');
-// //             }
-// //             const data = await response.json();
-// //             setUserData(data);
-// //           } catch (error) {
-// //             console.error('Error fetching freelancer details:', error);
+// //   useEffect(() => {
+// //     const fetchDetails = async () => {
+// //       if (freelancerId) {
+// //         try {
+// //           const response = await fetch('/api/get-details', {
+// //             method: 'POST',
+// //             headers: {
+// //               'Content-Type': 'application/json'
+// //             },
+// //             body: JSON.stringify({ freelancerId })
+// //           });
+          
+// //           if (!response.ok) {
+// //             throw new Error('Failed to fetch details');
 // //           }
+          
+// //           const data = await response.json();
+// //           setUserData(data);
+// //           setEditedData(data); // Initialize editedData with current data
+// //         } catch (error) {
+// //           console.error('Error:', error);
+// //           setError('Error fetching freelancer details');
 // //         }
-// //       };
-
-// //       fetchDetails();
-// //     }, [freelancerId]);
-
-// //     const [isEditing, setIsEditing] = useState(false);
-// //     const [editedData, setEditedData] = useState(userData);
-
-// //     const handleEdit = () => {
-// //       if (isEditing) {
-// //         setUserData(editedData);
 // //       }
-// //       setIsEditing(!isEditing);
 // //     };
+
+// //     fetchDetails();
+// //   }, [freelancerId]);
+
+// //   const handleEdit = async () => {
+// //     if (isEditing) {
+// //       try {
+// //         const response = await fetch('/api/update-details', {
+// //           method: 'PUT',
+// //           headers: {
+// //             'Content-Type': 'application/json'
+// //           },
+// //           body: JSON.stringify({
+// //             freelancerId,
+// //             ...editedData  // Send all data
+// //           })
+// //         });
+
+// //         if (!response.ok) {
+// //           const errorData = await response.json();
+// //           throw new Error(errorData.error || 'Failed to update details');
+// //         }
+
+// //         const updatedData = await response.json();
+// //         setUserData(updatedData);
+// //         setSuccess('Profile updated successfully!');
+// //         setTimeout(() => setSuccess(''), 3000);
+// //       } catch (error) {
+// //         console.error('Error:', error);
+// //         setError(error.message || 'Error updating profile');
+// //         setTimeout(() => setError(''), 3000);
+// //         return; // Don't exit edit mode on error
+// //       }
+// //     } else {
+// //       // Entering edit mode - set editedData to current userData
+// //       setEditedData(userData);
+// //     }
+// //     setIsEditing(!isEditing);
+// //   };
+
+// //   const handleFieldChange = (key, value) => {
+// //     setEditedData(prev => ({
+// //       ...prev,
+// //       [key]: value
+// //     }));
+// //   };
+
+// //   if (isLoading) {
+// //     return (
+// //       <div className="p-8 bg-gray-50 min-h-screen flex items-center justify-center">
+// //         <div className="text-xl text-gray-600">Loading...</div>
+// //       </div>
+// //     );
+// //   }
 
 // //   return (
 // //     <div className="p-8 bg-gray-50 min-h-screen">
 // //       <div className="max-w-4xl mx-auto space-y-6">
+// //         {/* Success/Error Messages */}
+// //         {(success || error) && (
+// //           <div className={`p-4 rounded-lg ${success ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+// //             {success || error}
+// //           </div>
+// //         )}
+
 // //         {/* Profile Section */}
 // //         <div className="bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden">
 // //           <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gradient-to-r from-white to-gray-50">
@@ -68,19 +122,32 @@
 // //               </div>
 // //               <h2 className="text-xl font-semibold text-gray-900 ml-4">Your Profile Details</h2>
 // //             </div>
-// //             <button
-// //               onClick={handleEdit}
-// //               className="flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all
-// //                      hover:scale-105 active:scale-95"
-// //               style={{
-// //                 backgroundColor: isEditing ? '#000' : '#fff',
-// //                 color: isEditing ? '#fff' : '#000',
-// //                 border: '1px solid #000'
-// //               }}
-// //             >
-// //               <Edit2 className="w-4 h-4 mr-2" />
-// //               {isEditing ? 'Save Changes' : 'Edit Profile'}
-// //             </button>
+// //             <div className="flex gap-4">
+// //               {isEditing && (
+// //                 <button
+// //                   onClick={() => {
+// //                     setIsEditing(false);
+// //                     setEditedData(userData);
+// //                   }}
+// //                   className="flex items-center px-4 py-2 rounded-lg text-sm font-medium border border-gray-200 hover:bg-gray-50"
+// //                 >
+// //                   Cancel
+// //                 </button>
+// //               )}
+// //               <button
+// //                 onClick={handleEdit}
+// //                 className="flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all
+// //                        hover:scale-105 active:scale-95"
+// //                 style={{
+// //                   backgroundColor: isEditing ? '#000' : '#fff',
+// //                   color: isEditing ? '#fff' : '#000',
+// //                   border: '1px solid #000'
+// //                 }}
+// //               >
+// //                 <Edit2 className="w-4 h-4 mr-2" />
+// //                 {isEditing ? 'Save Changes' : 'Edit Profile'}
+// //               </button>
+// //             </div>
 // //           </div>
 
 // //           <div className="p-6 grid grid-cols-2 gap-6">
@@ -92,13 +159,15 @@
 // //                 {isEditing ? (
 // //                   <input
 // //                     type="text"
-// //                     value={editedData[key]}
-// //                     onChange={(e) => setEditedData({ ...editedData, [key]: e.target.value })}
-// //                     className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-black 
-// //                            focus:ring-1 focus:ring-black transition-colors"
+// //                     value={editedData[key] || ''}
+// //                     onChange={(e) => handleFieldChange(key, e.target.value)}
+// //                     disabled={key === 'email'}
+// //                     className={`w-full px-4 py-2 rounded-lg border border-gray-200 
+// //                               ${key === 'email' ? 'bg-gray-50 cursor-not-allowed' : 'focus:border-black focus:ring-1 focus:ring-black'}
+// //                               transition-colors`}
 // //                   />
 // //                 ) : (
-// //                   <p className="text-base text-gray-900 py-2">{value}</p>
+// //                   <p className="text-base text-gray-900 py-2">{value || '-'}</p>
 // //                 )}
 // //               </div>
 // //             ))}
@@ -164,72 +233,123 @@
 //   const [editedData, setEditedData] = useState(userData);
 //   const [error, setError] = useState('');
 //   const [success, setSuccess] = useState('');
+//   const [isSubmitting, setIsSubmitting] = useState(false);
 
 //   useEffect(() => {
 //     const fetchDetails = async () => {
-//       if (freelancerId) {
-//         try {
-//           const response = await fetch('/api/get-details', {
-//             method: 'POST',
-//             headers: {
-//               'Content-Type': 'application/json'
-//             },
-//             body: JSON.stringify({ freelancerId })
-//           });
-          
-//           if (!response.ok) {
-//             throw new Error('Failed to fetch details');
-//           }
-          
-//           const data = await response.json();
-//           setUserData(data);
-//           setEditedData(data);
-//         } catch (error) {
-//           setError('Error fetching freelancer details');
-//           console.error('Error:', error);
+//       if (!freelancerId) return;
+      
+//       try {
+//         const response = await fetch('/api/get-details', {
+//           method: 'POST',
+//           headers: {
+//             'Content-Type': 'application/json'
+//           },
+//           body: JSON.stringify({ freelancerId })
+//         });
+        
+//         if (!response.ok) {
+//           const errorData = await response.json();
+//           throw new Error(errorData.error || 'Failed to fetch details');
 //         }
+        
+//         const data = await response.json();
+//         setUserData(data);
+//         setEditedData(data);
+//       } catch (error) {
+//         console.error('Error:', error);
+//         setError('Error fetching freelancer details');
+//         setTimeout(() => setError(''), 3000);
 //       }
 //     };
 
 //     fetchDetails();
 //   }, [freelancerId]);
 
+//   const validateForm = () => {
+//     if (!editedData.name?.trim()) {
+//       setError('Name is required');
+//       return false;
+//     }
+//     if (editedData.mobile && !/^\d{10}$/.test(editedData.mobile)) {
+//       setError('Mobile number must be 10 digits');
+//       return false;
+//     }
+//     if (editedData.pincode && !/^\d{6}$/.test(editedData.pincode)) {
+//       setError('Pincode must be 6 digits');
+//       return false;
+//     }
+//     return true;
+//   };
 //   const handleEdit = async () => {
 //     if (isEditing) {
-//       // Save changes
+//       if (!validateForm()) {
+//         setTimeout(() => setError(''), 3000);
+//         return;
+//       }
+  
+//       setIsSubmitting(true);
 //       try {
+//         // Simply pass the data as-is
+//         const dataToUpdate = {
+//           freelancerId,
+//           ...editedData
+//         };
+  
 //         const response = await fetch('/api/update-details', {
-//           method: 'PUT',
+//           method: 'POST',
 //           headers: {
 //             'Content-Type': 'application/json'
 //           },
-//           body: JSON.stringify({
-//             freelancerId,
-//             ...editedData
-//           })
+//           body: JSON.stringify(dataToUpdate)
 //         });
-
+  
+//         const data = await response.json();
+  
 //         if (!response.ok) {
-//           throw new Error('Failed to update details');
+//           throw new Error(data.error || 'Failed to update details');
 //         }
-
-//         const updatedData = await response.json();
-//         setUserData(updatedData);
+  
+//         setUserData(data);
 //         setSuccess('Profile updated successfully!');
-//         setTimeout(() => setSuccess(''), 3000); // Clear success message after 3 seconds
+//         setIsEditing(false);
 //       } catch (error) {
-//         setError('Error updating profile');
 //         console.error('Error:', error);
-//         setTimeout(() => setError(''), 3000); // Clear error message after 3 seconds
+//         setError(error.message || 'Error updating profile');
+//       } finally {
+//         setIsSubmitting(false);
+//         setTimeout(() => {
+//           setError('');
+//           setSuccess('');
+//         }, 3000);
 //       }
+//     } else {
+//       setEditedData(userData);
+//       setIsEditing(true);
 //     }
-//     setIsEditing(!isEditing);
+//   };
+ 
+//   const handleFieldChange = (key, value) => {
+//     setEditedData(prev => ({
+//       ...prev,
+//       [key]: value
+//     }));
+//     // Clear any existing error when user starts typing
+//     if (error) setError('');
 //   };
 
 //   if (isLoading) {
 //     return (
 //       <div className="p-8 bg-gray-50 min-h-screen flex items-center justify-center">
 //         <div className="text-xl text-gray-600">Loading...</div>
+//       </div>
+//     );
+//   }
+
+//   if (!isAuthenticated || !freelancerId) {
+//     return (
+//       <div className="p-8 bg-gray-50 min-h-screen flex items-center justify-center">
+//         <div className="text-xl text-gray-600">Please login to view your profile</div>
 //       </div>
 //     );
 //   }
@@ -259,16 +379,19 @@
 //                   onClick={() => {
 //                     setIsEditing(false);
 //                     setEditedData(userData);
+//                     setError('');
 //                   }}
-//                   className="flex items-center px-4 py-2 rounded-lg text-sm font-medium border border-gray-200 hover:bg-gray-50"
+//                   className="flex items-center px-4 py-2 rounded-lg text-sm font-medium border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+//                   disabled={isSubmitting}
 //                 >
 //                   Cancel
 //                 </button>
 //               )}
 //               <button
 //                 onClick={handleEdit}
+//                 disabled={isSubmitting}
 //                 className="flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all
-//                        hover:scale-105 active:scale-95"
+//                        hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
 //                 style={{
 //                   backgroundColor: isEditing ? '#000' : '#fff',
 //                   color: isEditing ? '#fff' : '#000',
@@ -276,7 +399,7 @@
 //                 }}
 //               >
 //                 <Edit2 className="w-4 h-4 mr-2" />
-//                 {isEditing ? 'Save Changes' : 'Edit Profile'}
+//                 {isSubmitting ? 'Saving...' : isEditing ? 'Save Changes' : 'Edit Profile'}
 //               </button>
 //             </div>
 //           </div>
@@ -291,10 +414,12 @@
 //                   <input
 //                     type="text"
 //                     value={editedData[key] || ''}
-//                     onChange={(e) => setEditedData({ ...editedData, [key]: e.target.value })}
-//                     className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-black 
-//                            focus:ring-1 focus:ring-black transition-colors"
-//                     disabled={key === 'email'} // Email field shouldn't be editable
+//                     onChange={(e) => handleFieldChange(key, e.target.value)}
+//                     disabled={key === 'email' || isSubmitting}
+//                     className={`w-full px-4 py-2 rounded-lg border border-gray-200 
+//                               ${key === 'email' ? 'bg-gray-50 cursor-not-allowed' : 'focus:border-black focus:ring-1 focus:ring-black'}
+//                               transition-colors disabled:opacity-50`}
+//                     placeholder={`Enter your ${key.toLowerCase()}`}
 //                   />
 //                 ) : (
 //                   <p className="text-base text-gray-900 py-2">{value || '-'}</p>
@@ -341,19 +466,29 @@
 
 // export default ProfileContent;
 
-
 "use client"
 import React, { useState, useEffect } from 'react';
 import { User, Edit2, BellRing, ChevronRight } from 'lucide-react';
 import { useAuth } from '@/context/authContext';
 
 const ProfileContent = () => {
-  const { freelancerId, email, isAuthenticated, isLoading, logout } = useAuth();
+  const { freelancerId, email, isAuthenticated, isLoading } = useAuth();
+
+  // Fields to display in the UI
+  const displayFields = [
+    'name',
+    'email',
+    'mobile',
+    'city',
+    'country',
+    'pincode',
+    'profession'
+  ];
   
   const [userData, setUserData] = useState({
     name: '',
-    mobile: '',
     email: '',
+    mobile: '',
     city: '',
     country: '',
     pincode: '',
@@ -364,83 +499,122 @@ const ProfileContent = () => {
   const [editedData, setEditedData] = useState(userData);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchDetails = async () => {
-      if (freelancerId) {
-        try {
-          const response = await fetch('/api/get-details', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ freelancerId })
-          });
-          
-          if (!response.ok) {
-            throw new Error('Failed to fetch details');
-          }
-          
-          const data = await response.json();
-          setUserData(data);
-          setEditedData(data); // Initialize editedData with current data
-        } catch (error) {
-          console.error('Error:', error);
-          setError('Error fetching freelancer details');
+      if (!freelancerId) return;
+      
+      try {
+        const response = await fetch('/api/get-details', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ freelancerId })
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to fetch details');
         }
+        
+        const data = await response.json();
+        setUserData(data);
+        setEditedData(data);
+      } catch (error) {
+        console.error('Error:', error);
+        setError('Error fetching freelancer details');
+        setTimeout(() => setError(''), 3000);
       }
     };
 
     fetchDetails();
   }, [freelancerId]);
 
+  const validateForm = () => {
+    if (!editedData.name?.trim()) {
+      setError('Name is required');
+      return false;
+    }
+    if (editedData.mobile && !/^\d{10}$/.test(editedData.mobile)) {
+      setError('Mobile number must be 10 digits');
+      return false;
+    }
+    if (editedData.pincode && !/^\d{6}$/.test(editedData.pincode)) {
+      setError('Pincode must be 6 digits');
+      return false;
+    }
+    return true;
+  };
+
   const handleEdit = async () => {
     if (isEditing) {
+      if (!validateForm()) {
+        setTimeout(() => setError(''), 3000);
+        return;
+      }
+  
+      setIsSubmitting(true);
       try {
+        const dataToUpdate = {
+          freelancerId,
+          ...editedData
+        };
+  
         const response = await fetch('/api/update-details', {
-          method: 'PUT',
+          method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({
-            freelancerId,
-            ...editedData  // Send all data
-          })
+          body: JSON.stringify(dataToUpdate)
         });
-
+  
+        const data = await response.json();
+  
         if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || 'Failed to update details');
+          throw new Error(data.error || 'Failed to update details');
         }
-
-        const updatedData = await response.json();
-        setUserData(updatedData);
+  
+        setUserData(data);
         setSuccess('Profile updated successfully!');
-        setTimeout(() => setSuccess(''), 3000);
+        setIsEditing(false);
       } catch (error) {
         console.error('Error:', error);
         setError(error.message || 'Error updating profile');
-        setTimeout(() => setError(''), 3000);
-        return; // Don't exit edit mode on error
+      } finally {
+        setIsSubmitting(false);
+        setTimeout(() => {
+          setError('');
+          setSuccess('');
+        }, 3000);
       }
     } else {
-      // Entering edit mode - set editedData to current userData
       setEditedData(userData);
+      setIsEditing(true);
     }
-    setIsEditing(!isEditing);
   };
-
+ 
   const handleFieldChange = (key, value) => {
     setEditedData(prev => ({
       ...prev,
       [key]: value
     }));
+    if (error) setError('');
   };
 
   if (isLoading) {
     return (
       <div className="p-8 bg-gray-50 min-h-screen flex items-center justify-center">
         <div className="text-xl text-gray-600">Loading...</div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated || !freelancerId) {
+    return (
+      <div className="p-8 bg-gray-50 min-h-screen flex items-center justify-center">
+        <div className="text-xl text-gray-600">Please login to view your profile</div>
       </div>
     );
   }
@@ -470,16 +644,19 @@ const ProfileContent = () => {
                   onClick={() => {
                     setIsEditing(false);
                     setEditedData(userData);
+                    setError('');
                   }}
-                  className="flex items-center px-4 py-2 rounded-lg text-sm font-medium border border-gray-200 hover:bg-gray-50"
+                  className="flex items-center px-4 py-2 rounded-lg text-sm font-medium border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={isSubmitting}
                 >
                   Cancel
                 </button>
               )}
               <button
                 onClick={handleEdit}
+                disabled={isSubmitting}
                 className="flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all
-                       hover:scale-105 active:scale-95"
+                       hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{
                   backgroundColor: isEditing ? '#000' : '#fff',
                   color: isEditing ? '#fff' : '#000',
@@ -487,13 +664,13 @@ const ProfileContent = () => {
                 }}
               >
                 <Edit2 className="w-4 h-4 mr-2" />
-                {isEditing ? 'Save Changes' : 'Edit Profile'}
+                {isSubmitting ? 'Saving...' : isEditing ? 'Save Changes' : 'Edit Profile'}
               </button>
             </div>
           </div>
 
           <div className="p-6 grid grid-cols-2 gap-6">
-            {Object.entries(userData).map(([key, value]) => (
+            {displayFields.map((key) => (
               <div key={key} className="space-y-2">
                 <label className="text-sm font-medium text-gray-500 capitalize">
                   {key}
@@ -503,13 +680,14 @@ const ProfileContent = () => {
                     type="text"
                     value={editedData[key] || ''}
                     onChange={(e) => handleFieldChange(key, e.target.value)}
-                    disabled={key === 'email'}
+                    disabled={key === 'email' || isSubmitting}
                     className={`w-full px-4 py-2 rounded-lg border border-gray-200 
                               ${key === 'email' ? 'bg-gray-50 cursor-not-allowed' : 'focus:border-black focus:ring-1 focus:ring-black'}
-                              transition-colors`}
+                              transition-colors disabled:opacity-50`}
+                    placeholder={`Enter your ${key.toLowerCase()}`}
                   />
                 ) : (
-                  <p className="text-base text-gray-900 py-2">{value || '-'}</p>
+                  <p className="text-base text-gray-900 py-2">{userData[key] || '-'}</p>
                 )}
               </div>
             ))}

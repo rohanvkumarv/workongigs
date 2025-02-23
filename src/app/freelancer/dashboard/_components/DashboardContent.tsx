@@ -1,176 +1,338 @@
-"use client "
 
-import React from 'react';
-import { User, Edit2, FileText, CircleDollarSign, PlusCircle, ArrowUpRight, Phone, Mail, ExternalLink } from 'lucide-react';
+"use client"
+
+
+import React, { useEffect, useState } from 'react';
+import { User, FileText, Phone, Mail, ArrowUpRight, Copy, Send, PlusCircle, X } from 'lucide-react';
 import { useAuth } from '@/context/authContext';
+import Link from 'next/link';
+import { useNotification } from "@/components/NotificationProvider";
+
 
 
 const DashboardContent = () => {
-  const { freelancerId, email, isAuthenticated, isLoading, logout } = useAuth();
-  
-  return (
-    <div className="min-h-screen bg-black/[0.02] p-6 space-y-6">
-      {/* Top Row */}
-      <div className="grid grid-cols-4 gap-6">
-        {/* User Details Card */}
-        <div className="bg-white rounded-2xl p-6 shadow-lg border border-black/5 relative overflow-hidden group">
-          <div className="absolute inset-0 bg-gradient-to-br from-black/[0.02] to-transparent" />
-          <div className="relative">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-black rounded-xl flex items-center justify-center">
-                <User className="w-6 h-6 text-white" />
-              </div>
-              <a
-                href="/profile"
-                className="text-xs text-black/60 hover:text-black flex items-center gap-1 transition-colors"
-              >
-                <Edit2 className="w-4 h-4" />
-                Edit Profile
-              </a>
-            </div>
-            <h3 className="text-lg font-semibold text-black mb-4">John Doe</h3>
-            <div className="space-y-2">
-              <div className="flex items-center text-sm text-black/60">
-                <Phone className="w-4 h-4 mr-2" />
-                +1 234 567 8900
-              </div>
-              <div className="flex items-center text-sm text-black/60">
-                <Mail className="w-4 h-4 mr-2" />
-                john.doe@email.com
-              </div>
-            </div>
-          </div>
-        </div>
+  const { freelancerId } = useAuth();
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [copySuccess, setCopySuccess] = useState('');
+  const [showWithdrawModal, setShowWithdrawModal] = useState(false);
+  const { showNotification } = useNotification();
 
-  
-        {/* Unpaid Projects Card */}
-<div className="bg-white rounded-2xl overflow-hidden shadow-lg border border-black/5">
-  <div className="h-1 bg-red-500 w-full" />
-  <div className="p-6">
-    <div className="flex items-center justify-between mb-4">
-      <h3 className="text-sm font-medium text-black/60">Unpaid Projects</h3>
-      <span className="text-xs text-red-500 font-medium">Attention Required</span>
-    </div>
-    <div className="flex items-end justify-between">
-      <div className="space-y-1">
-        <p className="text-3xl font-bold text-black">05</p>
-        <p className="text-xs text-black/40">Projects pending payment</p>
-      </div>
-      <div className="w-16 h-16 relative">
-        <div className="absolute inset-0 bg-gradient-to-br from-red-500/20 to-orange-500/20 rounded-full transform rotate-45">
-          <div className="absolute inset-0.5 rounded-full bg-white/40 backdrop-blur-sm"></div>
-        </div>
-        <div className="absolute inset-2 rounded-full bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center shadow-lg">
-          <FileText className="w-6 h-6 text-white" />
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        if (!freelancerId) return;
+        const res = await fetch(`/api/get-dashboard-details?freelancerId=${freelancerId}`);
+        if (!res.ok) throw new Error('Failed to fetch data');
+        const jsonData = await res.json();
+        setData(jsonData);
+      } catch (err) {
+        console.error('Error fetching dashboard data:', err);
+        showNotification('Failed to load dashboard data', 'error');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-{/* Total Projects Card */}
-<div className="bg-white rounded-2xl p-6 shadow-lg border border-black/5 relative overflow-hidden">
-  <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full -mr-16 -mt-16 blur-2xl" />
-  <div className="relative">
-    <h3 className="text-sm font-medium text-black/60 mb-4">Total Projects</h3>
-    <div className="flex items-end justify-between">
-      <div className="space-y-1">
-        <p className="text-3xl font-bold text-black">12</p>
-        <p className="text-xs text-black/40">Active projects</p>
-      </div>
-      <div className="w-16 h-16 relative">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-indigo-600/20 rounded-full transform rotate-45">
-          <div className="absolute inset-0.5 rounded-full bg-white/40 backdrop-blur-sm"></div>
-        </div>
-        <div className="absolute inset-2 rounded-full bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center shadow-lg">
-          <FileText className="w-6 h-6 text-white" />
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+    fetchData();
+  }, [freelancerId]);
 
-        {/* Amount to Withdraw Card */}
-        <div className="bg-black rounded-2xl p-6 shadow-lg relative overflow-hidden group">
-          <div className="absolute inset-0 bg-gradient-to-br from-green-500/20 to-transparent" />
-          <div className="relative">
-            <h3 className="text-sm font-medium text-white/60 mb-4">Available to Withdraw</h3>
-            <div className="space-y-4">
-              <div className="space-y-1">
-                <p className="text-3xl font-bold text-white">$3,250</p>
-                <p className="text-xs text-white/40">Total balance</p>
-              </div>
-              <button className="w-full py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg text-sm font-medium transition-colors">
-                Withdraw Funds
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+  const sendReminderToAll = async () => {
+    try {
+      const res = await fetch('/api/send-bulk-reminder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ unpaidDeliveries: data.unpaidDeliveries })
+      });
+      if (!res.ok) throw new Error('Failed to send reminders');
+      showNotification('Payment reminders sent to all clients', 'success');
+    } catch (err) {
+      console.error('Error sending reminders:', err);
+      showNotification('Failed to send reminders', 'error');
+    }
+  };
 
-      {/* Bottom Row */}
-      <div className="flex gap-6">
-        {/* Recent Projects Section - 70% width */}
-        <div className="w-[70%] bg-white rounded-2xl shadow-lg border border-black/5 overflow-hidden">
-          <div className="border-b border-black/5">
-            <div className="p-6 flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-black">Recent Projects</h2>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-black/40">View all</span>
-                <ArrowUpRight className="w-4 h-4 text-black/40" />
-              </div>
-            </div>
-          </div>
-          <div className="p-6 space-y-4">
-            {[1, 2, 3].map((project) => (
-              <div key={project} className="flex items-center justify-between p-4 rounded-xl border border-black/5 hover:border-black/10 transition-colors">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-black/5 rounded-lg flex items-center justify-center">
-                    <FileText className="w-6 h-6 text-black/40" />
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-black">Project Name Here</h3>
-                    <p className="text-sm text-black/40">Client Name • Due in 3 days</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-lg font-semibold text-black">$2,500</p>
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                    In Progress
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+  const sendSingleReminder = async (deliveryId, clientId) => {
+    try {
+      const res = await fetch('/api/send-single-reminder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ deliveryId, clientId })
+      });
+      if (!res.ok) throw new Error('Failed to send reminder');
+      showNotification('Payment reminder sent successfully', 'success');
+    } catch (err) {
+      console.error('Error sending reminder:', err);
+      showNotification('Failed to send reminder', 'error');
+    }
+  };
 
-        {/* Right Side Column - 30% width */}
-        <div className="w-[30%] space-y-6">
-          {/* Add New Project Card */}
-          <a 
-            href="/add-new"
-            className="block bg-black rounded-2xl p-6 shadow-lg relative overflow-hidden group hover:shadow-xl transition-all"
+  const copyPreviewLink = async (deliveryId) => {
+    const link = `${window.location.origin}/preview/${deliveryId}`;
+    try {
+      await navigator.clipboard.writeText(link);
+      setCopySuccess(deliveryId);
+      showNotification('Preview link copied to clipboard', 'success');
+      setTimeout(() => setCopySuccess(''), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+      showNotification('Failed to copy link', 'error');
+    }
+  };
+
+  const WithdrawModal = () => (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-xl font-semibold">Withdraw Funds</h3>
+          <button 
+            onClick={() => setShowWithdrawModal(false)}
+            className="text-gray-500 hover:text-gray-700"
           >
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-purple-500/20 opacity-0 group-hover:opacity-100 transition-opacity" />
-            <div className="relative flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold text-white mb-1">Add New Project</h3>
-                <p className="text-sm text-white/60">Create a new project</p>
-              </div>
-              <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center">
-                <PlusCircle className="w-6 h-6 text-white" />
-              </div>
-            </div>
-          </a>
-
-          {/* Empty Space for Future Content */}
-          <div className="bg-white rounded-2xl p-6 shadow-lg border border-black/5 h-64">
-            {/* Future content area */}
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        <div className="text-center space-y-4">
+          <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto">
+            <Phone className="w-8 h-8 text-blue-500" />
           </div>
+          <p className="text-lg font-medium">Coming Soon!</p>
+          <p className="text-gray-600">
+            This feature is currently under development. For immediate assistance, please contact us:
+          </p>
+          <p className="text-blue-500 font-medium">+1 (555) 123-4567</p>
         </div>
       </div>
     </div>
   );
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+      </div>
+    );
+  }
+
+  if (!data) return null;
+
+  const { freelancer, stats, unpaidDeliveries } = data;
+
+  return (
+    <div className="min-h-screen bg-gray-50 p-6 space-y-6">
+      {showWithdrawModal && <WithdrawModal />}
+      
+      {/* Top Stats Row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Profile Card */}
+        <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200">
+          <div className="flex items-center justify-between mb-4">
+            <div className="w-12 h-12 bg-black rounded-xl flex items-center justify-center">
+              <User className="w-6 h-6 text-white" />
+            </div>
+            <h3 className="text-lg font-semibold text-black">
+              {freelancer.name || 'Update Profile'}
+            </h3>
+          </div>
+          <div className="space-y-2 mb-4">
+            <div className="flex items-center text-sm text-gray-600">
+              <Phone className="w-4 h-4 mr-2" />
+              {freelancer.mobile || 'Add phone number'}
+            </div>
+            <div className="flex items-center text-sm text-gray-600">
+              <Mail className="w-4 h-4 mr-2" />
+              {freelancer.email}
+            </div>
+          </div>
+          <Link 
+            href="/freelancer/profile" 
+            className="flex items-center text-blue-500 hover:text-blue-600 text-sm"
+          >
+            View Profile <ArrowUpRight className="w-4 h-4 ml-1" />
+          </Link>
+        </div>
+
+        {/* Active Clients Card */}
+        <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200">
+          <h3 className="text-sm font-medium text-gray-600 mb-4">Active Clients</h3>
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-5xl font-bold">{stats.activeClientsWithUnpaidDeliveries}</span>
+            <span className="text-3xl">/</span>
+            <span className="text-4xl text-gray-500">{stats.totalClients}</span>
+          </div>
+          <p className="mt-4 text-base text-gray-500">with unpaid deliveries</p>
+        </div>
+
+        {/* Amount on Hold Card */}
+        <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200">
+          <h3 className="text-sm font-medium text-gray-600 mb-4">Amount on Hold</h3>
+          <p className="text-3xl font-bold mb-4">${stats.amountOnHold}</p>
+          <button 
+            onClick={sendReminderToAll}
+            className="w-full mt-6 bg-black text-white rounded-lg py-2 font-medium hover:bg-gray-900 transition-colors shadow-lg"
+          >
+            <span className="flex items-center justify-center">
+              Send Reminder to All
+              <span className="ml-2 animate-pulse">
+                <Send className="w-4 h-4" />
+              </span>
+            </span>
+          </button>
+        </div>
+
+        {/* Earnings Card */}
+        <div className="bg-black rounded-2xl p-6 shadow-lg">
+          <h3 className="text-sm font-medium text-gray-300 mb-4">Earnings</h3>
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <span className="text-gray-400">Available to withdraw</span>
+              <span className="text-white font-bold">${stats.availableToWithdraw}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-400">Total amount earned</span>
+              <span className="text-white font-bold">${stats.totalPaidAmount}</span>
+            </div>
+            <button 
+              onClick={() => setShowWithdrawModal(true)}
+              className="w-full bg-white text-black rounded-lg py-2 font-medium hover:bg-gray-100 transition-colors"
+            >
+              Withdraw ${stats.availableToWithdraw}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content Area */}
+      <div className="flex flex-col lg:flex-row gap-6">
+        {/* Deliveries Table Section */}
+       
+        <div className="lg:w-[70%] space-y-6">
+  <div className="bg-white rounded-2xl shadow-lg border border-gray-200">
+    <div className="p-6 border-b border-gray-200">
+      <h2 className="text-xl font-semibold">Unpaid Deliveries</h2>
+    </div>
+    <div className="overflow-x-auto">
+      <table className="w-full">
+        <thead className="bg-gray-50">
+          <tr>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Payment Reminder</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Preview Copy</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-200">
+          {unpaidDeliveries.map((delivery) => (
+            <tr key={delivery.id} className="hover:bg-gray-50">
+              <td className="px-6 py-4">{delivery.name}</td>
+              <td className="px-6 py-4">₹{delivery.amount}</td>
+              <td className="px-6 py-4">
+                {new Date(delivery.createdAt).toLocaleDateString()}
+              </td>
+              <td className="px-6 py-4">
+                <button
+                  onClick={() => sendSingleReminder(delivery.id, delivery.client.id)}
+                  className="text-blue-500 hover:text-blue-600 transition-colors"
+                  title="Send reminder"
+                >
+                  <Send className="w-4 h-4" />
+                </button>
+              </td>
+              <td className="px-6 py-4">
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => copyPreviewLink(delivery.id)}
+                    className="text-gray-500 hover:text-gray-700 transition-colors"
+                    title="Copy preview link"
+                  >
+                    <Copy className="w-4 h-4" />
+                  </button>
+                  {copySuccess === delivery.id && (
+                    <span className="text-green-500 text-xs">Copied!</span>
+                  )}
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+     {/* Right Sidebar */}
+     <div className="lg:w-[30%] space-y-6">
+       {/* Add New Client Button */}
+       <Link 
+         href="/freelancer/add_new"
+         className="block bg-black rounded-2xl p-6 shadow-lg hover:bg-black/90 transition-all group"
+       >
+         <div className="flex items-center justify-between">
+           <div>
+             <h3 className="text-lg font-semibold text-white mb-1">Add New Client</h3>
+             <p className="text-sm text-gray-400">Create a new client profile</p>
+           </div>
+           <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center group-hover:bg-white/20 transition-colors">
+             <PlusCircle className="w-6 h-6 text-white" />
+           </div>
+         </div>
+       </Link>
+
+       {/* Quick Stats Card */}
+       <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200">
+         <h3 className="text-lg font-semibold mb-6">Quick Stats</h3>
+         <div className="space-y-6">
+           {/* Payment Success Rate */}
+           <div>
+             <div className="flex justify-between items-center mb-2">
+               <span className="text-gray-600">Payment Success Rate</span>
+               <span className="font-semibold">
+                 {Math.round((stats.totalPaidAmount / (stats.totalPaidAmount + stats.amountOnHold)) * 100)}%
+               </span>
+             </div>
+             <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+               <div 
+                 className="h-full bg-green-500 rounded-full"
+                 style={{ 
+                   width: `${Math.round((stats.totalPaidAmount / (stats.totalPaidAmount + stats.amountOnHold)) * 100)}%` 
+                 }}
+               />
+             </div>
+           </div>
+
+           {/* Average Delivery Value */}
+           <div className="flex justify-between items-center pb-4 border-b border-gray-200">
+             <span className="text-gray-600">Avg. Delivery Value</span>
+             <span className="font-semibold">
+               ${Math.round((stats.totalPaidAmount + stats.amountOnHold) / 
+                 (stats.activeClientsWithUnpaidDeliveries + 1)).toLocaleString()}
+             </span>
+           </div>
+
+           {/* Total Pending Amount */}
+           <div className="flex justify-between items-center pb-4 border-b border-gray-200">
+             <span className="text-gray-600">Total Pending</span>
+             <span className="font-semibold text-red-500">
+               ${stats.amountOnHold.toLocaleString()}
+             </span>
+           </div>
+
+           {/* Active vs Total Clients */}
+           <div className="flex justify-between items-center">
+             <span className="text-gray-600">Active/Total Clients</span>
+             <span className="font-semibold">
+               {stats.activeClientsWithUnpaidDeliveries}/{stats.totalClients}
+             </span>
+           </div>
+         </div>
+       </div>
+
+       
+     </div>
+   </div>
+ </div>
+);
 };
 
 export default DashboardContent;

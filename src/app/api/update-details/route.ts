@@ -1,91 +1,106 @@
 
-// // app/api/freelancer/update-details/route.js
 // import { db } from '@/lib/prisma';
 // import { NextResponse } from 'next/server';
 
-// export async function PUT(request) {
+// export async function POST(request) {
 //   try {
-//     const {
-//       freelancerId,
-//       name,
-//       mobile,
-//       city,
-//       country,
-//       pincode,
-//       profession
-//     } = await request.json();
+//     const body = await request.json();
+//     console.log('Request body:', body);
 
-//     if (!freelancerId) {
-//       return NextResponse.json(
-//         { error: 'Freelancer ID is required' },
-//         { status: 400 }
-//       );
+//     // Basic validation
+//     if (!body.freelancerId) {
+//       return NextResponse.json({ error: 'Freelancer ID required' }, { status: 400 });
 //     }
 
-//     const updatedFreelancer = await db.freelancer.update({
-//       where: { id: freelancerId },
-//       data: {
-//         name,
-//         mobile: mobile ? parseInt(mobile) : null,
-//         city,
-//         country,
-//         pincode,
-//         profession,
+//     const result = await db.freelancer.update({
+//       where: {
+//         id: body.freelancerId
 //       },
+//       data: {
+//         name: body.name,
+//         mobile: body.mobile ? BigInt(body.mobile) : null,  // Convert to BigInt
+//         city: body.city,
+//         country: body.country,
+//         pincode: body.pincode,
+//         profession: body.profession
+//       }
 //     });
 
-//     return NextResponse.json(updatedFreelancer);
+//     // Convert BigInt to string for JSON response
+//     const response = {
+//       ...result,
+//       mobile: result.mobile ? result.mobile.toString() : null
+//     };
+
+//     return NextResponse.json(response);
 //   } catch (error) {
-//     console.error('Error updating freelancer details:', error);
+//     console.log('Error details:', {
+//       name: error.name,
+//       message: error.message,
+//       code: error.code
+//     });
+
 //     return NextResponse.json(
-//       { error: 'Internal server error' },
+//       { error: 'Failed to update profile' },
 //       { status: 500 }
 //     );
 //   }
 // }
 
-// app/api/update-details/route.ts
 import { db } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 
-export async function PUT(request: Request) {
+export async function POST(request) {
   try {
     const body = await request.json();
     
-    if (!body || !body.freelancerId) {
+    if (!body?.freelancerId) {
       return NextResponse.json(
-        { error: 'Invalid request data' },
+        { error: 'Freelancer ID required' }, 
         { status: 400 }
       );
     }
 
-    const {
-      freelancerId,
-      name,
-      mobile,
-      city,
-      country,
-      pincode,
-      profession
-    } = body;
-
-    const updatedFreelancer = await db.freelancer.update({
-      where: { id: freelancerId },
-      data: {
-        name,
-        mobile: mobile ? parseInt(mobile) : null,
-        city,
-        country,
-        pincode,
-        profession
+    const result = await db.freelancer.update({
+      where: {
+        id: body.freelancerId
       },
+      data: {
+        name: body.name,
+        mobile: body.mobile ? parseInt(body.mobile) : null,
+        city: body.city,
+        country: body.country,
+        pincode: body.pincode,
+        profession: body.profession
+      },
+      // Only select the fields we want to return
+      select: {
+        name: true,
+        email: true,
+        mobile: true,
+        city: true,
+        country: true,
+        pincode: true,
+        profession: true
+      }
     });
 
-    return NextResponse.json(updatedFreelancer);
+    // Format the response
+    const response = {
+      name: result.name || '',
+      email: result.email || '',
+      mobile: result.mobile?.toString() || '',
+      city: result.city || '',
+      country: result.country || '',
+      pincode: result.pincode || '',
+      profession: result.profession || ''
+    };
+
+    return NextResponse.json(response);
   } catch (error) {
-    console.error('Error updating freelancer details:', error);
+    console.error('Error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Failed to update profile' },
       { status: 500 }
     );
   }

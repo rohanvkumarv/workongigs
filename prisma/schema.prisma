@@ -16,7 +16,7 @@ model Freelancer {
   username   String?   @unique
   email      String  @unique
   password   String
-  mobile     Int?
+  mobile     BigInt?
   city       String?
   country    String?
   pincode    String?
@@ -54,6 +54,7 @@ model Delivery {
   desc       String
   cost       Float
   PaymentStatus  String
+  withdrawStatus String   @default("no")
 
   files         File[]    @relation("DeliveryFiles")  // Changed to DeliveriesFiles
 

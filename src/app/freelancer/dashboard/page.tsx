@@ -1,14 +1,26 @@
-"ise client"
-import DashboardContent from "./_components/DashboardContent"
-// export default function DashboardPage() {
+// "ise client"
+// import DashboardContent from "./_components/DashboardContent"
+// // export default function DashboardPage() {
+// //   return <DashboardContent />;
+// // }
+// import React from 'react'
+
+// const Page  = () => {
 //   return <DashboardContent />;
 // }
-import React from 'react'
 
-const Page  = () => {
+// export default Page 
+"use client";
+
+import DashboardContent from "./_components/DashboardContent";
+import { NotificationProvider } from "@/components/NotificationProvider";
+
+const Page = () => {
   return (
-    <div >Dashboard Coming soon </div>
-  )
-}
+    <NotificationProvider>
+      <DashboardContent />
+    </NotificationProvider>
+  );
+};
 
-export default Page 
+export default Page;
