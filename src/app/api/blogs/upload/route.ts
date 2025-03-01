@@ -6,10 +6,9 @@ import { v4 as uuidv4 } from 'uuid';
 
 // Correctly named environment variables
 const REGION = process.env.AWS_S3_REGION;
-const ACCESS_KEY = process.env.S3_ACCESS_KEY_ID;
-const SECRET_KEY = process.env.S3_SECRET_ACCESS_KEY;
-const BUCKET_NAME = process.env.S3_BUCKET_NAME;
-
+const ACCESS_KEY = process.env.AWS_ACCESS_KEY_ID;
+const SECRET_KEY = process.env.AWS_SECRET_ACCESS_KEY;
+const BUCKET_NAME = process.env.AWS_S3_BUCKET_NAME;
 
 // Define the folder structure inside the S3 bucket
 const FOLDER_PATH = 'blog/images/';
