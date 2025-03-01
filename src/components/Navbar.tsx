@@ -250,6 +250,7 @@ const Navbar = () => {
   }, []);
   const leftNavItems = [
     { label: 'How To Use', href: '/#usage' },
+    { label: 'Our Blogs', href: '/blogs' },
   ];
 
   // Right side navigation items
