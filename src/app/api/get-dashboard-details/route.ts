@@ -1,127 +1,3 @@
-
-// import { NextResponse } from 'next/server';
-// import {db} from '@/lib/prisma';
-
-// export async function GET(request: Request) {
-//   try {
-//     const { searchParams } = new URL(request.url);
-//     const freelancerId = searchParams.get('freelancerId');
-
-//     if (!freelancerId) {
-//       return NextResponse.json({ error: 'Freelancer ID is required' }, { status: 400 });
-//     }
-
-//     // 1. Get freelancer basic info
-//     const freelancer = await db.freelancer.findUnique({
-//       where: { id: freelancerId },
-//       select: {
-//         name: true,
-//         email: true,
-//         mobile: true,
-//         profileImage:true,
-//       },
-//     });
-
-//     if (!freelancer) {
-//       return NextResponse.json({ error: 'Freelancer not found' }, { status: 404 });
-//     }
-
-//     // 2. Get all deliveries with client info
-//     const deliveries = await db.delivery.findMany({
-//       where: {
-//         client: {
-//           freelancerId,
-//         },
-//       },
-//       select: {
-//         id: true,
-//         name: true,
-//         cost: true,
-//         PaymentStatus: true,
-//         withdrawStatus: true,
-//         createdAt: true,
-//         client: {
-//           select: {
-//             id: true,
-//             email: true,
-//             name: true,
-//           },
-//         },
-//       },
-//       orderBy: {
-//         createdAt: 'desc',
-//       },
-//     });
-
-//     // 3. Calculate various amounts
-//     const totalPaidAmount = deliveries
-//       .filter(d => d.PaymentStatus === 'Paid')
-//       .reduce((sum, d) => sum + d.cost, 0);
-
-//     const amountOnHold = deliveries
-//       .filter(d => d.PaymentStatus === 'Not Paid')
-//       .reduce((sum, d) => sum + d.cost, 0);
-
-//     const availableToWithdraw = deliveries
-//       .filter(d => d.PaymentStatus === 'Paid' && d.withdrawStatus === 'no')
-//       .reduce((sum, d) => sum + d.cost, 0);
-
-//     // 4. Get unpaid deliveries with client info
-//     const unpaidDeliveries = deliveries
-//       .filter(d => d.PaymentStatus === 'Not Paid')
-//       .map(d => ({
-//         id: d.id,
-//         name: d.name,
-//         amount: d.cost,
-//         createdAt: d.createdAt,
-//         client: {
-//           id: d.client.id,
-//           email: d.client.email,
-//           name: d.client.name,
-//         },
-//       }));
-
-//     // 5. Get clients with unpaid deliveries
-//     const clientsWithUnpaidDeliveries = [...new Set(
-//       unpaidDeliveries.map(d => d.client.id)
-//     )];
-
-//     // 6. Get total clients count
-//     const totalClients = await db.client.count({
-//       where: { freelancerId },
-//     });
-//     const response ={
-
-//       freelancer: {
-//         id:freelancer.id,
-//         name: freelancer.name,
-//         email: freelancer.email,
-//         profileImage:freelancer.profileImage,
-//         mobile: freelancer.mobile?.toString(), // Only convert mobile to string
-//       },
-      
-//       stats: {
-//         totalPaidAmount,
-//         amountOnHold,
-//         availableToWithdraw,
-//         totalClients,
-//         activeClientsWithUnpaidDeliveries: clientsWithUnpaidDeliveries.length,
-//       },
-//       unpaidDeliveries: unpaidDeliveries,
-//     }
-//     console.log(response)
-//     return NextResponse.json(response);
-
-//   } catch (error) {
-//     console.error('Dashboard API Error:', error);
-//     return NextResponse.json(
-//       { error: 'Failed to fetch dashboard data' },
-//       { status: 500 }
-//     );
-//   }
-// }
-
-// app/api/get-dashboard-details/route.ts
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/prisma';
 
@@ -138,8 +14,8 @@ export async function GET(request: Request) {
     // Calculate date ranges based on timeFrame
     const now = new Date();
     let startDate = new Date();
-    
-    switch(timeFrame) {
+
+    switch (timeFrame) {
       case '24h':
         startDate.setHours(startDate.getHours() - 24);
         break;
@@ -153,10 +29,10 @@ export async function GET(request: Request) {
         startDate.setMonth(startDate.getMonth() - 3);
         break;
       default:
-        startDate.setDate(startDate.getDate() - 30); // Default to 30 days
+        startDate.setDate(startDate.getDate() - 30);
     }
 
-    // 1. Get freelancer basic info
+    // 1. Fetch freelancer details
     const freelancer = await db.freelancer.findUnique({
       where: { id: freelancerId },
       select: {
@@ -172,13 +48,9 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Freelancer not found' }, { status: 404 });
     }
 
-    // 2. Get all deliveries with client info
+    // 2. Fetch all deliveries with client info
     const deliveries = await db.delivery.findMany({
-      where: {
-        client: {
-          freelancerId,
-        },
-      },
+      where: { client: { freelancerId } },
       select: {
         id: true,
         name: true,
@@ -195,60 +67,31 @@ export async function GET(request: Request) {
           },
         },
       },
-      orderBy: {
-        createdAt: 'desc',
-      },
+      orderBy: { createdAt: 'desc' },
     });
 
-    // 3. Calculate various amounts
-    const totalPaidAmount = deliveries
-      .filter(d => d.PaymentStatus === 'Paid')
-      .reduce((sum, d) => sum + d.cost, 0);
+    // 3. Calculate financial stats
+    let totalPaidAmount = 0;
+    let amountOnHold = 0;
+    let availableToWithdraw = 0;
 
-    const amountOnHold = deliveries
-      .filter(d => d.PaymentStatus === 'Not Paid')
-      .reduce((sum, d) => sum + d.cost, 0);
+    deliveries.forEach((d) => {
+      if (d.PaymentStatus === 'Paid') {
+        totalPaidAmount += d.cost;
+        if (d.withdrawStatus === 'no') {
+          availableToWithdraw += d.cost;
+        }
+      } else if (d.PaymentStatus === 'Not Paid') {
+        amountOnHold += d.cost;
+      }
+    });
 
-    const availableToWithdraw = deliveries
-      .filter(d => d.PaymentStatus === 'Paid' && d.withdrawStatus === 'no')
-      .reduce((sum, d) => sum + d.cost, 0);
+    // 4. Get unpaid deliveries and clients with unpaid deliveries
+    const clientsWithUnpaidDeliveriesMap = new Map();
 
-    // 4. Get unpaid deliveries with client info
     const unpaidDeliveries = deliveries
       .filter(d => d.PaymentStatus === 'Not Paid')
-      .map(d => ({
-        id: d.id,
-        name: d.name,
-        amount: d.cost,
-        createdAt: d.createdAt,
-        client: {
-          id: d.client.id,
-          email: d.client.email,
-          name: d.client.name,
-        },
-      }));
-
-    // 5. Get recent deliveries (all statuses)
-    const recentDeliveries = deliveries
-      .slice(0, 10)
-      .map(d => ({
-        id: d.id,
-        name: d.name,
-        amount: d.cost,
-        status: d.PaymentStatus,
-        createdAt: d.createdAt,
-        client: {
-          id: d.client.id,
-          name: d.client.name,
-        },
-      }));
-
-    // 6. Calculate clients with unpaid deliveries
-    const clientsWithUnpaidDeliveriesMap = new Map();
-    
-    deliveries
-      .filter(d => d.PaymentStatus === 'Not Paid')
-      .forEach(d => {
+      .map(d => {
         const clientId = d.client.id;
         if (!clientsWithUnpaidDeliveriesMap.has(clientId)) {
           clientsWithUnpaidDeliveriesMap.set(clientId, {
@@ -260,79 +103,98 @@ export async function GET(request: Request) {
             deliveryIds: [],
           });
         }
-        
+
         const client = clientsWithUnpaidDeliveriesMap.get(clientId);
         client.deliveriesCount += 1;
         client.totalAmount += d.cost;
         client.deliveryIds.push(d.id);
+
+        return {
+          id: d.id,
+          name: d.name,
+          amount: d.cost,
+          createdAt: d.createdAt,
+          client: {
+            id: d.client.id,
+            email: d.client.email,
+            name: d.client.name,
+          },
+        };
       });
-    
+
     const clientsWithUnpaidDeliveries = Array.from(clientsWithUnpaidDeliveriesMap.values());
 
-    // 7. Calculate time-frame specific stats
-    const deliveriesInTimeFrame = deliveries.filter(d => 
-      new Date(d.createdAt) >= startDate && new Date(d.createdAt) <= now
+    // 5. Get recent deliveries (latest 10)
+    const recentDeliveries = deliveries.slice(0, 10).map(d => ({
+      id: d.id,
+      name: d.name,
+      amount: d.cost,
+      status: d.PaymentStatus,
+      createdAt: d.createdAt,
+      client: {
+        id: d.client.id,
+        name: d.client.name,
+      },
+    }));
+
+    // 6. Get deliveries within the selected timeframe
+    const deliveriesInTimeFrame = deliveries.filter(
+      d => new Date(d.createdAt) >= startDate && new Date(d.createdAt) <= now
     );
 
     const totalDeliveries = deliveriesInTimeFrame.length;
-    
-    const avgOrderValue = totalDeliveries > 0 
-      ? Math.round(deliveriesInTimeFrame.reduce((sum, d) => sum + d.cost, 0) / totalDeliveries) 
-      : 0;
+    const avgOrderValue =
+      totalDeliveries > 0
+        ? Math.round(deliveriesInTimeFrame.reduce((sum, d) => sum + d.cost, 0) / totalDeliveries)
+        : 0;
 
-    // 8. Calculate new clients onboarded in the time frame
+    // 7. Get new clients onboarded in the time frame
     const newClientsOnboarded = await db.client.count({
-      where: {
-        freelancerId,
-        createdAt: {
-          gte: startDate,
-          lte: now,
-        },
-      },
+      where: { freelancerId, createdAt: { gte: startDate, lte: now } },
     });
 
-    // 9. Calculate repeated clients (clients who are not new and have made deliveries in the last 30 days)
+    // 8. Get repeated clients count
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    
-    // Get all clients
+
+    // Get all clients for the freelancer
     const clients = await db.client.findMany({
-      where: { 
-        freelancerId 
-      },
-      select: {
-        id: true,
-        createdAt: true,
-      },
+      where: { freelancerId },
+      select: { id: true, createdAt: true },
     });
 
-    // Get clients who are not new (created more than 30 days ago)
+    // Identify old clients (who joined more than 30 days ago)
     const oldClients = clients.filter(c => new Date(c.createdAt) < thirtyDaysAgo);
-    
-    // Get client IDs who have made deliveries in the last 30 days
-    const clientsWithRecentDeliveries = [...new Set(
-      deliveries
-        .filter(d => new Date(d.createdAt) >= thirtyDaysAgo)
-        .map(d => d.client.id)
-    )];
-    
-    // Count how many old clients have recent deliveries
-    const repeatedClients = oldClients.filter(c => 
-      clientsWithRecentDeliveries.includes(c.id)
+
+    // Count deliveries per client in the last 30 days
+    const clientDeliveryCounts = new Map<string, number>();
+    deliveries
+      .filter(d => new Date(d.createdAt) >= thirtyDaysAgo)
+      .forEach(d => {
+        clientDeliveryCounts.set(d.client.id, (clientDeliveryCounts.get(d.client.id) || 0) + 1);
+      });
+
+    // Count old clients who made at least one delivery in the last 30 days
+    const repeatedClients = oldClients.filter(c => clientDeliveryCounts.has(c.id)).length;
+
+    // Include new clients who have more than one delivery in 30 days
+    const newClientsWithMultipleDeliveries = clients.filter(
+      c => new Date(c.createdAt) >= thirtyDaysAgo && (clientDeliveryCounts.get(c.id) || 0) > 1
     ).length;
 
-    // 10. Get total clients count
-    const totalClients = await db.client.count({
-      where: { freelancerId },
-    });
+    const totalRepeatedClients = repeatedClients + newClientsWithMultipleDeliveries;
 
+    // 9. Get total clients count
+    const totalClients = await db.client.count({ where: { freelancerId } });
+
+    // 10. Construct response data
     const response = {
       freelancer: {
         id: freelancer.id,
         name: freelancer.name,
         email: freelancer.email,
         profileImage: freelancer.profileImage,
-        mobile: freelancer.mobile?.toString(), // Convert mobile to string
+        mobile: freelancer.mobile?.toString(),
       },
       stats: {
         totalPaidAmount,
@@ -343,7 +205,7 @@ export async function GET(request: Request) {
         totalDeliveries,
         avgOrderValue,
         newClientsOnboarded,
-        repeatedClients,
+        repeatedClients: totalRepeatedClients,
       },
       unpaidDeliveries,
       recentDeliveries,
@@ -351,12 +213,8 @@ export async function GET(request: Request) {
     };
 
     return NextResponse.json(response);
-
   } catch (error) {
     console.error('Dashboard API Error:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch dashboard data' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to fetch dashboard data' }, { status: 500 });
   }
 }
