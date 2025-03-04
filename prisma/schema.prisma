@@ -21,6 +21,7 @@ model Freelancer {
   country    String?
   pincode    String?
   profession String?
+  profileImage String? 
 
   clients    Client[]  @relation("FreelancerClients") 
 

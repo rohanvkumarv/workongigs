@@ -3,16 +3,6 @@ import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 import { db } from '@/lib/prisma';
 
-// Create nodemailer transporter
-// const transporter = nodemailer.createTransport({
-//   host: process.env.SMTP_HOST,
-//   port: Number(process.env.SMTP_PORT),
-//   secure: true,
-//   auth: {
-//     user: process.env.SMTP_USER,
-//     pass: process.env.SMTP_PASS,
-//   },
-// });
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -42,23 +32,6 @@ export async function POST(request: Request) {
         { status: 404 }
       );
     }
-
-    // // Check if we've sent too many reminders recently
-    // const recentReminders = await db.paymentReminder.count({
-    //   where: {
-    //     deliveryId,
-    //     sentAt: {
-    //       gte: new Date(Date.now() - 24 * 60 * 60 * 1000) // Last 24 hours
-    //     }
-    //   }
-    // });
-
-    // if (recentReminders >= 3) {
-    //   return NextResponse.json(
-    //     { error: 'Too many reminders sent recently' },
-    //     { status: 429 }
-    //   );
-    // }
 
     const mailOptions = {
       from: process.env.SMTP_FROM,
@@ -91,15 +64,7 @@ export async function POST(request: Request) {
 
     await transporter.sendMail(mailOptions);
 
-    // Log the reminder in the database
-    // await db.paymentReminder.create({
-    //   data: {
-    //     deliveryId: delivery.id,
-    //     clientId: delivery.client.id,
-    //     type: 'single',
-    //     sentAt: new Date(),
-    //   }
-    // });
+   
 
     return NextResponse.json({ 
       message: 'Reminder sent successfully',
