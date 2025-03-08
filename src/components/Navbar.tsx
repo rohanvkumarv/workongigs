@@ -221,7 +221,7 @@ const Navbar = () => {
   const [activeIndex, setActiveIndex] = useState(null);
   const [mounted, setMounted] = useState(false);
 
-  const { freelancerId, email, isAuthenticated, isLoading, logout } = useAuth();
+  const { freelancerId,adminId, email, isAuthenticated, isLoading, logout } = useAuth();
   console.log( freelancerId)
   
   // useEffect(() => {
@@ -369,6 +369,20 @@ const Navbar = () => {
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                   </motion.a>
                 )}
+                
+                {adminId ? (
+  <motion.a
+    href={`/admin`}
+    whileHover={{ scale: 1.02 }}
+    whileTap={{ scale: 0.98 }}
+    className="ml-2 px-5 py-2 bg-black text-white rounded-xl text-sm font-medium
+             hover:bg-gray-900 transition-colors duration-300 flex items-center gap-2 group"
+  >
+    Admin Dashboard
+    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+  </motion.a>
+) : null}
+
               </div>
 
               {/* Mobile Menu Button */}

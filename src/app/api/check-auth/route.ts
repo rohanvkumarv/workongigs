@@ -1,38 +1,28 @@
-// // app/api/check-auth/route.js
-export const dynamic = 'force-dynamic'
-import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
+// // // app/api/check-auth/route.js
+// export const dynamic = 'force-dynamic'
+// import { NextResponse } from 'next/server';
+// import { cookies } from 'next/headers';
 
 // export async function GET() {
 //   try {
 //     const cookieStore = await cookies();
-//     const authCookie = cookieStore.get('auth');
+//     const freelancerCookie = cookieStore.get('freelancerId');
 
-//     if (!authCookie) {
+//     if (!freelancerCookie) {
 //       return NextResponse.json({ 
 //         success: false, 
-//         message: 'No auth cookie found' 
+//         error: 'Not authenticated' 
 //       });
 //     }
 
-//     // Parse the auth cookie
-//     const authData = JSON.parse(authCookie.value);
+//     // Now we can parse the JSON data from the cookie
+//     const freelancerData = JSON.parse(freelancerCookie.value);
 
-//     // Check if token is expired
-//     if (authData.exp && authData.exp < Date.now()) {
-//       return NextResponse.json({ 
-//         success: false, 
-//         message: 'Auth token expired' 
-//       });
-//     }
-
-//     // Return user data
 //     return NextResponse.json({
 //       success: true,
-//       user: {
-//         id: authData.id,
-//         email: authData.email,
-//         type: authData.type
+//       freelancer: {
+//         id: freelancerData.id,
+//         email: freelancerData.email
 //       }
 //     });
 
@@ -44,33 +34,64 @@ import { cookies } from 'next/headers';
 //     );
 //   }
 // }
-
-
-
 // app/api/check-auth/route.js
-// export const dynamic = 'force-dynamic'
+export const dynamic = 'force-dynamic'
+import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
+
 export async function GET() {
   try {
     const cookieStore = await cookies();
     const freelancerCookie = cookieStore.get('freelancerId');
+    const adminCookie = cookieStore.get('adminId');
+    
+    let response = {
+      success: false,
+      isFreelancer: false,
+      isAdmin: false,
+      freelancer: null,
+      admin: null
+    };
 
-    if (!freelancerCookie) {
+    // Check for freelancer authentication
+    if (freelancerCookie?.value) {
+      try {
+        const freelancerData = JSON.parse(freelancerCookie.value);
+        response.success = true;
+        response.isFreelancer = true;
+        response.freelancer = {
+          id: freelancerData.id,
+          email: freelancerData.email
+        };
+      } catch (error) {
+        console.error('Error parsing freelancer cookie:', error);
+      }
+    }
+
+    // Check for admin authentication
+    if (adminCookie?.value) {
+      try {
+        const adminData = JSON.parse(adminCookie.value);
+        response.success = true;
+        response.isAdmin = true;
+        response.admin = {
+          id: adminData.id,
+          email: adminData.email
+        };
+      } catch (error) {
+        console.error('Error parsing admin cookie:', error);
+      }
+    }
+
+    // If either auth type is successful, return success
+    if (response.success) {
+      return NextResponse.json(response);
+    } else {
       return NextResponse.json({ 
         success: false, 
         error: 'Not authenticated' 
       });
     }
-
-    // Now we can parse the JSON data from the cookie
-    const freelancerData = JSON.parse(freelancerCookie.value);
-
-    return NextResponse.json({
-      success: true,
-      freelancer: {
-        id: freelancerData.id,
-        email: freelancerData.email
-      }
-    });
 
   } catch (error) {
     console.error('Error checking auth:', error);
