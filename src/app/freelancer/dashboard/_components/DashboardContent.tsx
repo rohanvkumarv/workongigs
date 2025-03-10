@@ -1173,7 +1173,7 @@
 import React, { useEffect, useState } from 'react';
 import { 
   User, FileText, Phone, Mail, ArrowUpRight, Copy, Send, 
-  PlusCircle, X, Calendar, Clock, Filter, Bell
+  PlusCircle, X, Calendar, Clock, Filter, Bell  ,HelpCircle
 } from 'lucide-react';
 import { useAuth } from '@/context/authContext';
 import Link from 'next/link';
@@ -1516,16 +1516,16 @@ const DashboardContent = () => {
           <div className="lg:w-[30%] space-y-6">
             {/* Add New Client Button */}
             <Link 
-              href="/freelancer/add_new"
+              href="/freelancer/support"
               className="block bg-black rounded-2xl p-6 shadow-lg hover:bg-black/90 transition-all group"
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-1">Add New Client</h3>
-                  <p className="text-sm text-gray-400">Create a new client profile</p>
+                  <h3 className="text-lg font-semibold text-white mb-1">Support and Contact Us</h3>
+                  <p className="text-sm text-gray-400">Get help and assistance</p>
                 </div>
                 <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center group-hover:bg-white/20 transition-colors">
-                  <PlusCircle className="w-6 h-6 text-white" />
+                  <HelpCircle className="w-6 h-6 text-white" />
                 </div>
               </div>
             </Link>

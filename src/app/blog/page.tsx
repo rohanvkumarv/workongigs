@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ChevronRight, Clock, Plus, Search } from 'lucide-react';
-import BlogCard from './_components/BlogCard';
+import BlogCard from '../admin/_components/BlogCard';
 
 export default function BlogsListPage() {
   const [blogs, setBlogs] = useState([]);

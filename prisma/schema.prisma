@@ -25,6 +25,7 @@ model Freelancer {
 
   clients    Client[]  @relation("FreelancerClients") 
   notifications Notification[]
+  feedback     FreelancerFeedback[]
 
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
@@ -147,4 +148,38 @@ model Notification {
   freelancer   Freelancer? @relation(fields: [freelancerId], references: [id])
   
   createdAt    DateTime    @default(now())
+}
+
+model FreelancerFeedback {
+  id            String    @id @default(cuid())
+  type          String    // "bug", "feature_request", "general_feedback", "support"
+  title         String
+  description   String    @db.Text
+  priority      String?
+  status        String    @default("pending")
+  freelancerId  String    
+  freelancer    Freelancer @relation(fields: [freelancerId], references: [id])
+  adminResponses AdminResponse[]
+  statusChanges StatusChange[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model AdminResponse {
+  id            String    @id @default(cuid())
+  message       String    @db.Text
+  feedbackId    String
+  feedback      FreelancerFeedback @relation(fields: [feedbackId], references: [id], onDelete: Cascade)
+  adminId       String
+  createdAt     DateTime  @default(now())
+}
+
+model StatusChange {
+  id            String    @id @default(cuid())
+  oldStatus     String
+  newStatus     String
+  feedbackId    String
+  feedback      FreelancerFeedback @relation(fields: [feedbackId], references: [id], onDelete: Cascade)
+  adminId       String
+  createdAt     DateTime  @default(now())
 }

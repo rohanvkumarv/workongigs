@@ -20,7 +20,9 @@ import {
   UserPlus, 
   Bell, 
   CreditCard, 
-  Layout
+  Layout,
+  
+  Bug
 } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import Alert from '@/components/Alert';
@@ -41,6 +43,7 @@ const Sidebar = () => {
     { icon: Package, label: 'Deliveries', href: `/admin/deliveries` },
     { icon: UserPlus, label: 'Freelancers', href: `/admin/freelancers` },
     { icon: Bell, label: 'Notifications', href: `/admin/notifications` },
+    { icon: Bug, label: 'Feedbacks', href: `/admin/feedbacks` },
     { icon: CreditCard, label: 'Payments', href: `/admin/payments` },
     
   ];
