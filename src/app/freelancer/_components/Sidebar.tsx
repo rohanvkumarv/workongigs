@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-import { Upload, X, Plus, User, FolderPlus, Home, LogOut, Menu ,HelpCircle } from 'lucide-react';
+import { Upload, X, Plus, User, FolderPlus, Home, LogOut, Menu ,HelpCircle ,Pen} from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import Alert from '@/components/Alert';
 const Sidebar = () => {
@@ -19,6 +19,7 @@ const Sidebar = () => {
     { icon: FolderPlus, label: 'Clients', href:   `/freelancer/clients`},
     { icon: Plus, label: 'Add New Client', href: `/freelancer/add_new`},
     { icon: Plus, label: 'Create New Delivery', href: `/freelancer/create_new_delivery`},
+    { icon: Pen, label: 'Revisions', href: `/freelancer/revisions`},
     { icon: HelpCircle, label: 'Support', href: `/freelancer/support`},
     { icon: User, label: 'Profile', href: `/freelancer/profile` }
   ];

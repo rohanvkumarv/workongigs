@@ -64,6 +64,8 @@ model Delivery {
   clientId      String    // Changed from projectId to clientId
   client        Client    @relation("ClientDeliveries", fields: [clientId], references: [id])
 
+  revisions     Revision[] @relation("DeliveryRevisions") // Added relation
+
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 }
@@ -182,4 +184,29 @@ model StatusChange {
   feedback      FreelancerFeedback @relation(fields: [feedbackId], references: [id], onDelete: Cascade)
   adminId       String
   createdAt     DateTime  @default(now())
+}
+model Revision {
+  id           String     @id @default(cuid())
+  message      String     @db.Text
+  status       String     @default("pending") // pending, accepted, completed, rejected
+  
+  responses    RevisionResponse[] @relation("RevisionResponses") // Added relation to responses
+  
+  deliveryId   String
+  delivery     Delivery   @relation("DeliveryRevisions", fields: [deliveryId], references: [id])
+  
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
+
+// RevisionResponse model for freelancer responses to revision requests
+model RevisionResponse {
+  id           String     @id @default(cuid())
+  message      String     @db.Text
+  
+  revisionId   String
+  revision     Revision   @relation("RevisionResponses", fields: [revisionId], references: [id])
+  
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
 }

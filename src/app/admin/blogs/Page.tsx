@@ -1,7 +1,7 @@
 "use client"
 import React from 'react'
 import BlogsListPage from '../_components/BlogPage'
-const Page = () => {
+const page = () => {
   return (
     <>
 <BlogsListPage/>
@@ -9,4 +9,4 @@ const Page = () => {
   )
 }
 
-export default Page
+export default page
