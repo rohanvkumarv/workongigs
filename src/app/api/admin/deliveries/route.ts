@@ -1,8 +1,9 @@
 // app/api/admin/deliveries/route.ts
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+// import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
+// const prisma = new PrismaClient();
+import { db } from '@/lib/prisma';
 
 // Helper function to handle BigInt serialization
 const serializeData = (data) => {
@@ -58,12 +59,12 @@ export async function GET(request: Request) {
     }
     
     // Execute count query for pagination
-    const totalDeliveries = await prisma.delivery.count({
+    const totalDeliveries = await db.delivery.count({
       where: whereConditions
     });
     
     // Execute main query with pagination
-    const deliveries = await prisma.delivery.findMany({
+    const deliveries = await db.delivery.findMany({
       where: whereConditions,
       include: {
         client: {

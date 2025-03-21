@@ -1,8 +1,6 @@
 // app/api/admin/delivery-files/route.ts
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { db } from '@/lib/prisma';
 
 // Helper function to handle BigInt serialization
 const serializeData = (data) => {
@@ -31,7 +29,7 @@ export async function GET(request: Request) {
     }
     
     // Fetch all files for the specified delivery
-    const files = await prisma.file.findMany({
+    const files = await db.file.findMany({
       where: {
         deliveryId: deliveryId
       },

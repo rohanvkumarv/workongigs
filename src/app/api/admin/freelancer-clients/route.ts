@@ -1,8 +1,9 @@
 // app/api/admin/freelancer-clients/route.ts
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+// import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
+// const prisma = new PrismaClient();
+import { db } from '@/lib/prisma';
 
 // Helper function to handle BigInt serialization
 const serializeData = (data) => {
@@ -31,7 +32,7 @@ export async function GET(request: Request) {
     }
     
     // Fetch all clients for the specified freelancer with delivery count
-    const clients = await prisma.client.findMany({
+    const clients = await db.client.findMany({
       where: {
         freelancerId: freelancerId
       },

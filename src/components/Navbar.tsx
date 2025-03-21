@@ -282,7 +282,8 @@ const Navbar = () => {
                 {/* Logo */}
                 <motion.div 
                   whileHover={{ scale: 1.05 }}
-                  className="relative z-10 flex items-center gap-3"
+                  className="relative z-10 flex items-center gap-3 cursor-pointer"
+                  onClick={() => window.location.href = '/'}
                 >
                   <div className="h-9 w-9 bg-black rounded-xl flex items-center justify-center">
                     <span className="text-white text-xl font-bold">W</span>

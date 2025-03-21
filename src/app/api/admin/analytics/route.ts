@@ -1,8 +1,11 @@
 // app/api/admin/analytics/route.js
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+// import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
+// const prisma = new PrismaClient();
+
+import { db } from '@/lib/prisma';
+
 
 export async function GET(request) {
   try {
@@ -41,9 +44,9 @@ export async function GET(request) {
     }
 
     // Freelancer stats
-    const totalFreelancers = await prisma.freelancer.count();
+    const totalFreelancers = await db.freelancer.count();
     
-    const newFreelancers = await prisma.freelancer.count({
+    const newFreelancers = await db.freelancer.count({
       where: {
         createdAt: {
           gte: startDate
@@ -52,9 +55,9 @@ export async function GET(request) {
     });
     
     // Clients stats
-    const totalClients = await prisma.client.count();
+    const totalClients = await db.client.count();
     
-    const newClients = await prisma.client.count({
+    const newClients = await db.client.count({
       where: {
         createdAt: {
           gte: startDate
@@ -62,16 +65,16 @@ export async function GET(request) {
       }
     });
     
-    const activeClients = await prisma.client.count({
+    const activeClients = await db.client.count({
       where: {
         status: 'ACTIVE'
       }
     });
     
     // Delivery stats
-    const totalDeliveries = await prisma.delivery.count();
+    const totalDeliveries = await db.delivery.count();
     
-    const newDeliveries = await prisma.delivery.count({
+    const newDeliveries = await db.delivery.count({
       where: {
         createdAt: {
           gte: startDate
@@ -80,7 +83,7 @@ export async function GET(request) {
     });
     
     // Payment stats
-    const paidDeliveries = await prisma.delivery.findMany({
+    const paidDeliveries = await db.delivery.findMany({
       where: {
         PaymentStatus: 'Paid',
         createdAt: {
@@ -94,7 +97,7 @@ export async function GET(request) {
     
     const totalPaidAmount = paidDeliveries.reduce((sum, delivery) => sum + delivery.cost, 0);
     
-    const unpaidDeliveries = await prisma.delivery.findMany({
+    const unpaidDeliveries = await db.delivery.findMany({
       where: {
         PaymentStatus: 'Not Paid',
         createdAt: {
@@ -208,7 +211,7 @@ async function getDailyStats(startDate) {
   });
   
   // Get daily freelancer signups
-  const freelancerSignups = await prisma.freelancer.findMany({
+  const freelancerSignups = await db.freelancer.findMany({
     where: {
       createdAt: {
         gte: startDate
@@ -228,7 +231,7 @@ async function getDailyStats(startDate) {
   });
   
   // Get daily client additions
-  const clientAdditions = await prisma.client.findMany({
+  const clientAdditions = await db.client.findMany({
     where: {
       createdAt: {
         gte: startDate
@@ -248,7 +251,7 @@ async function getDailyStats(startDate) {
   });
   
   // Get daily deliveries
-  const deliveryCreations = await prisma.delivery.findMany({
+  const deliveryCreations = await db.delivery.findMany({
     where: {
       createdAt: {
         gte: startDate
@@ -277,7 +280,7 @@ async function getDailyStats(startDate) {
 
 async function getTopFreelancers(startDate) {
   // Get all freelancers with their clients
-  const freelancers = await prisma.freelancer.findMany({
+  const freelancers = await db.freelancer.findMany({
     select: {
       id: true,
       name: true,
@@ -330,7 +333,7 @@ async function getTopFreelancers(startDate) {
 
 async function getMostActiveClients(startDate) {
   // Get all clients with their deliveries
-  const clients = await prisma.client.findMany({
+  const clients = await db.client.findMany({
     select: {
       id: true,
       name: true,
@@ -412,7 +415,7 @@ async function getPreviousPeriodStats(startDate, timeFrame) {
   previousPeriodEnd.setDate(previousPeriodEnd.getDate() - 1);
   
   // Get freelancers count for previous period
-  const totalFreelancers = await prisma.freelancer.count({
+  const totalFreelancers = await db.freelancer.count({
     where: {
       createdAt: {
         lt: currentPeriodStart
@@ -421,7 +424,7 @@ async function getPreviousPeriodStats(startDate, timeFrame) {
   });
   
   // Get clients count for previous period
-  const totalClients = await prisma.client.count({
+  const totalClients = await db.client.count({
     where: {
       createdAt: {
         lt: currentPeriodStart
@@ -430,7 +433,7 @@ async function getPreviousPeriodStats(startDate, timeFrame) {
   });
   
   // Get deliveries for previous period
-  const totalDeliveries = await prisma.delivery.count({
+  const totalDeliveries = await db.delivery.count({
     where: {
       createdAt: {
         gte: previousPeriodStart,
@@ -440,7 +443,7 @@ async function getPreviousPeriodStats(startDate, timeFrame) {
   });
   
   // Get paid amount for previous period
-  const paidDeliveries = await prisma.delivery.findMany({
+  const paidDeliveries = await db.delivery.findMany({
     where: {
       PaymentStatus: 'Paid',
       createdAt: {

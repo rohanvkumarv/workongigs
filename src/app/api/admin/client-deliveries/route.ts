@@ -1,8 +1,11 @@
 // app/api/admin/client-deliveries/route.ts
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+// import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
+// const prisma = new PrismaClient();
+
+
+import { db } from '@/lib/prisma';
 
 // Helper function to handle BigInt serialization
 const serializeData = (data) => {
@@ -31,7 +34,7 @@ export async function GET(request: Request) {
     }
     
     // Fetch all deliveries for the specified client
-    const deliveries = await prisma.delivery.findMany({
+    const deliveries = await db.delivery.findMany({
       where: {
         clientId: clientId
       },

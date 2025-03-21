@@ -1,8 +1,6 @@
 // app/api/admin/freelancer-stats/route.ts
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { db } from '@/lib/prisma';
 
 // Helper function to handle BigInt serialization
 const serializeData = (data) => {
@@ -31,14 +29,14 @@ export async function GET(request: Request) {
     }
     
     // Count total clients
-    const totalClients = await prisma.client.count({
+    const totalClients = await db.client.count({
       where: {
         freelancerId: freelancerId
       }
     });
     
     // Get all deliveries for this freelancer's clients
-    const deliveries = await prisma.delivery.findMany({
+    const deliveries = await db.delivery.findMany({
       where: {
         client: {
           freelancerId: freelancerId
@@ -75,7 +73,7 @@ export async function GET(request: Request) {
     const lastDeliveryDate = deliveries.length > 0 ? deliveries[0].createdAt : null;
     
     // Get last client added date
-    const lastClientAdded = await prisma.client.findFirst({
+    const lastClientAdded = await db.client.findFirst({
       where: {
         freelancerId: freelancerId
       },

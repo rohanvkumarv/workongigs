@@ -1,8 +1,9 @@
 // app/api/admin/freelancers/route.ts
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+// import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
+// const prisma = new PrismaClient();
+import { db } from '@/lib/prisma';
 
 // Helper function to handle BigInt serialization
 const serializeData = (data) => {
@@ -49,12 +50,12 @@ export async function GET(request: Request) {
     }
     
     // Execute count query for pagination
-    const totalFreelancers = await prisma.freelancer.count({
+    const totalFreelancers = await db.freelancer.count({
       where: whereConditions
     });
     
     // Execute main query with pagination and include client count
-    const freelancers = await prisma.freelancer.findMany({
+    const freelancers = await db.freelancer.findMany({
       where: whereConditions,
       include: {
         _count: {

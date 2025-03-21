@@ -1,8 +1,9 @@
 // app/api/admin/freelancers/export/route.ts
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+// import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
+// const prisma = new PrismaClient();
+import { db } from '@/lib/prisma';
 
 // Helper function to handle BigInt serialization
 const serializeData = (data) => {
@@ -20,7 +21,7 @@ const serializeData = (data) => {
 export async function GET() {
   try {
     // Fetch all freelancers for export with minimal fields
-    const freelancers = await prisma.freelancer.findMany({
+    const freelancers = await db.freelancer.findMany({
       select: {
         id: true,
         name: true,

@@ -157,12 +157,13 @@ const handleLogout = async () => {
       <div className="md:hidden fixed top-0 left-0 right-0 z-[9999]">
         <div className="relative bg-white border-b border-gray-100 shadow-sm">
           <div className="flex items-center justify-between px-4 py-3">
-            <div className="flex items-center gap-3">
-              <div className="h-8 w-8 bg-black rounded-lg flex items-center justify-center">
-                <span className="text-white text-xl font-bold">W</span>
-              </div>
-              <span className="font-medium text-gray-900">WorkOnGigs</span>
-            </div>
+                         <a  onClick={() => window.location.href = '/'} className="flex items-center gap-3">
+                <div className="h-8 w-8 bg-black rounded-lg flex items-center justify-center">
+                  <span className="text-white text-xl font-bold">W</span>
+                </div>
+                <span className="font-medium text-gray-900">WorkOnGigs</span>
+              </a>
+            
             <button
               onClick={() => setIsOpen(!isOpen)}
               className="p-2 hover:bg-gray-50 rounded-lg transition-colors"
