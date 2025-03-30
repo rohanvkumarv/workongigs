@@ -388,6 +388,92 @@
 //   );
 // };
 
+// // Latest Revision Display Component
+// const LatestRevisionDisplay = ({ 
+//   deliveryId, 
+//   revisions = [] 
+// }) => {
+//   // Get the latest revision for the current delivery
+//   const latestRevision = revisions && revisions.length 
+//     ? revisions.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0]
+//     : null;
+    
+//   // Get the latest response if available
+//   const latestResponse = latestRevision?.responses && latestRevision.responses.length 
+//     ? latestRevision.responses.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0]
+//     : null;
+    
+//   if (!latestRevision) return null;
+  
+//   const getStatusColor = (status) => {
+//     switch (status.toLowerCase()) {
+//       case 'completed':
+//         return 'bg-green-100 text-green-700 border-green-200';
+//       case 'accepted':
+//         return 'bg-blue-100 text-blue-700 border-blue-200';
+//       case 'rejected':
+//         return 'bg-red-100 text-red-700 border-red-200';
+//       default:
+//         return 'bg-yellow-100 text-yellow-700 border-yellow-200';
+//     }
+//   };
+  
+//   const formattedDate = (dateString) => {
+//     return new Date(dateString).toLocaleString();
+//   };
+
+//   return (
+//     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+//       <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+//         <div className="flex items-center gap-2">
+//           <StickyNote className="w-5 h-5 text-gray-500" />
+//           <h3 className="font-medium text-gray-700">Latest Revision</h3>
+//         </div>
+//         <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(latestRevision.status)}`}>
+//           {latestRevision.status}
+//         </span>
+//       </div>
+      
+//       <div className="p-4">
+//         {/* Revision Request */}
+//         <div className="mb-4">
+//           <div className="flex justify-between items-center mb-2">
+//             <span className="text-xs text-gray-500">
+//               Requested on {formattedDate(latestRevision.createdAt)}
+//             </span>
+//           </div>
+//           <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
+//             <p className="text-sm text-gray-700">{latestRevision.message}</p>
+//           </div>
+//         </div>
+        
+//         {/* Latest Response */}
+//         {latestResponse && (
+//           <div>
+//             <div className="flex justify-between items-center mb-2">
+//               <span className="text-xs text-gray-500">
+//                 Response on {formattedDate(latestResponse.createdAt)}
+//               </span>
+//             </div>
+//             <div className="bg-blue-50 p-3 rounded-lg border border-blue-100">
+//               <p className="text-sm text-gray-700">{latestResponse.message}</p>
+//             </div>
+//           </div>
+//         )}
+        
+//         {/* "View All" Button */}
+//         <button 
+//           onClick={() => document.getElementById('revisionRequestToggle')?.click()}
+//           className="w-full mt-4 py-2 text-sm text-blue-600 hover:text-blue-800 
+//                    bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
+//         >
+//           View All Revisions
+//         </button>
+//       </div>
+//     </div>
+//   );
+// };
+
 // // Revision Request Component
 // const RevisionRequest = ({ 
 //   clientId, 
@@ -492,6 +578,7 @@
 //   return (
 //     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
 //       <button
+//         id="revisionRequestToggle" // Added ID to access from other components
 //         onClick={() => setIsOpen(!isOpen)}
 //         className="w-full px-4 py-3 flex items-center justify-between 
 //                  hover:bg-gray-50 transition-colors"
@@ -1256,6 +1343,14 @@
 //                 )}
 //               </button>
 //             </div>
+            
+//             {/* New Latest Revision Display - only show if there are revisions */}
+//             {revisions[currentDelivery.id] && revisions[currentDelivery.id].length > 0 && (
+//               <LatestRevisionDisplay
+//                 deliveryId={currentDelivery.id}
+//                 revisions={revisions[currentDelivery.id] || []}
+//               />
+//             )}
 
 //             {/* Revision Request Section */}
 //             <RevisionRequest
@@ -1339,6 +1434,12 @@ import {
   Play, Pause, Loader, ChevronUp, ChevronDown
 } from 'lucide-react';
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
+
+// Helper function to determine if files can be downloaded
+const canDownloadFiles = (delivery, paymentMode) => {
+  // Allow download if already paid or if payment mode is "Pay Later"
+  return delivery.paymentStatus === "Paid" || paymentMode === "Pay Later";
+};
 
 // Progress notification component for payments
 const PaymentProgress = ({ status, message, onClose }) => {
@@ -1461,13 +1562,20 @@ const DownloadProgress = ({
 };
 
 // Audio Preview Component with conditional styling
-const AudioPreview = ({ url, filename, isPaid }) => {
+const AudioPreview = ({ url, filename, isPaid, isPayLater }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const audioRef = useRef(null);
+
+  // Get the appropriate theme color based on payment status
+  const getThemeColor = () => {
+    if (isPaid) return 'bg-green-500 hover:bg-green-600';
+    if (isPayLater) return 'bg-blue-500 hover:bg-blue-600';
+    return 'bg-black hover:bg-gray-800';
+  };
 
   const formatTime = (time) => {
     const minutes = Math.floor(time / 60);
@@ -1551,7 +1659,7 @@ const AudioPreview = ({ url, filename, isPaid }) => {
             >
               <div 
                 className={`absolute h-full transition-all duration-100 ${
-                  isPaid ? 'bg-green-500' : 'bg-black'
+                  isPaid ? 'bg-green-500' : isPayLater ? 'bg-blue-500' : 'bg-black'
                 }`}
                 style={{ width: `${progress}%` }}
               />
@@ -1563,9 +1671,7 @@ const AudioPreview = ({ url, filename, isPaid }) => {
               onClick={handlePlayPause}
               disabled={isLoading}
               className={`p-3 rounded-full text-white transition-colors duration-200 
-                       disabled:bg-gray-400 ${
-                         isPaid ? 'bg-green-500 hover:bg-green-600' : 'bg-black hover:bg-gray-800'
-                       }`}
+                       disabled:bg-gray-400 ${getThemeColor()}`}
             >
               {isPlaying ? (
                 <Pause className="w-5 h-5" />
@@ -1592,6 +1698,7 @@ const MediaViewer = ({
   currentFile, 
   currentDelivery, 
   isDeliveryPaid, 
+  paymentMode,
   currentSlide, 
   handlePrevSlide, 
   handleNextSlide 
@@ -1606,6 +1713,16 @@ const MediaViewer = ({
     return 'image';
   };
 
+  // Determine if this file can be downloaded (paid or Pay Later)
+  const canDownload = canDownloadFiles(currentDelivery, paymentMode);
+
+  // Get the status color based on payment status and mode
+  const getStatusColor = () => {
+    if (isDeliveryPaid) return 'bg-green-500 text-white';
+    if (paymentMode === 'Pay Later') return 'bg-blue-500 text-white';
+    return 'bg-black text-white';
+  };
+
   const renderMedia = () => {
     const mediaType = getMediaType(currentFile.url);
   
@@ -1616,13 +1733,14 @@ const MediaViewer = ({
             url={currentFile.url}
             filename={currentFile.name}
             isPaid={isDeliveryPaid}
+            isPayLater={paymentMode === 'Pay Later'}
           />
         );
       
       case 'video':
         return (
           <div className="relative h-full flex items-center justify-center">
-            {isDeliveryPaid ? (
+            {canDownload ? (
               <video 
                 className="w-full h-full object-cover"
                 controls
@@ -1640,7 +1758,7 @@ const MediaViewer = ({
         );
       
       default: // Image
-        const shouldBlur = !isDeliveryPaid;
+        const shouldBlur = !canDownload;
         const commonClassNames = `transition-all duration-300 ${shouldBlur ? 'filter blur-sm' : ''}`;
         
         return (
@@ -1666,13 +1784,12 @@ const MediaViewer = ({
   return (
     <div className="md:col-span-2">
       <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
-        {/* Delivery Name Banner */}
-        <div className={`px-4 py-2 ${
-          isDeliveryPaid ? 'bg-green-500 text-white' : 'bg-black text-white'
-        }`}>
+        {/* Delivery Name Banner with conditional styling */}
+        <div className={`px-4 py-2 ${getStatusColor()}`}>
           <h2 className="text-lg font-medium flex items-center gap-2">
             {currentDelivery.name}
             {isDeliveryPaid && <Check className="w-4 h-4" />}
+            {!isDeliveryPaid && paymentMode === 'Pay Later' && <span className="text-xs bg-white text-blue-500 px-2 py-0.5 rounded-full">Pay Later</span>}
           </h2>
         </div>
         
@@ -1705,7 +1822,7 @@ const MediaViewer = ({
                     key={idx}
                     className={`h-1 rounded-full transition-all duration-300 
                               ${currentSlide === idx 
-                                ? `w-4 ${isDeliveryPaid ? 'bg-green-500' : 'bg-black'}` 
+                                ? `w-4 ${isDeliveryPaid ? 'bg-green-500' : paymentMode === 'Pay Later' ? 'bg-blue-500' : 'bg-black'}` 
                                 : 'w-1 bg-gray-300'}`}
                   />
                 ))}
@@ -2479,6 +2596,7 @@ const PreviewPayment = () => {
       prev === 0 ? clientData.deliveries[selectedDelivery].files.length - 1 : prev - 1
     );
   };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
@@ -2502,6 +2620,29 @@ const PreviewPayment = () => {
   const currentDelivery = clientData.deliveries[selectedDelivery];
   const currentFile = currentDelivery.files[currentSlide];
   const isDeliveryPaid = currentDelivery.paymentStatus === "Paid";
+  const paymentMode = clientData.modeOfPay;
+  const canDownload = canDownloadFiles(currentDelivery, paymentMode);
+
+  // Get styling based on payment status and mode
+  const getDeliveryStatusColor = (delivery) => {
+    if (delivery.paymentStatus === "Paid") {
+      return 'bg-green-500 text-white shadow-lg';
+    }
+    if (paymentMode === "Pay Later") {
+      return 'bg-blue-500 text-white shadow-lg';
+    }
+    return 'bg-black text-white shadow-lg';
+  };
+
+  const getDeliveryStatusColorInactive = (delivery) => {
+    if (delivery.paymentStatus === "Paid") {
+      return 'bg-green-50 text-green-700 hover:bg-green-100';
+    }
+    if (paymentMode === "Pay Later") {
+      return 'bg-blue-50 text-blue-700 hover:bg-blue-100';
+    }
+    return 'bg-white/80 text-gray-600 hover:bg-white';
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
@@ -2530,6 +2671,11 @@ const PreviewPayment = () => {
           </h1>
           <p className="text-center mt-2 text-gray-400 text-sm md:text-base">
             Payment Mode: {clientData.modeOfPay} | Status: {clientData.status}
+            {paymentMode === "Pay Later" && (
+              <span className="inline-block ml-2 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-500 text-white">
+                Pay Later Enabled
+              </span>
+            )}
           </p>
         </div>
       </div>
@@ -2544,9 +2690,14 @@ const PreviewPayment = () => {
               <span className="text-sm font-medium text-gray-600">{clientData.name}</span>
               <span className="text-sm text-gray-400">/</span>
               <span className={`text-sm font-medium ${
-                isDeliveryPaid ? 'text-green-600' : 'text-gray-900'
+                isDeliveryPaid ? 'text-green-600' : 
+                paymentMode === 'Pay Later' ? 'text-blue-600' : 'text-gray-900'
               }`}>
-                {currentDelivery.name} {isDeliveryPaid && <Check className="inline-block w-4 h-4" />}
+                {currentDelivery.name} 
+                {isDeliveryPaid && <Check className="inline-block w-4 h-4" />}
+                {!isDeliveryPaid && paymentMode === 'Pay Later' && (
+                  <span className="ml-1 px-1.5 py-0.5 text-xs bg-blue-100 rounded-full">Pay Later</span>
+                )}
               </span>
             </div>
             <button
@@ -2566,16 +2717,15 @@ const PreviewPayment = () => {
                   className={`px-4 md:px-8 py-2 md:py-3 rounded-xl md:rounded-2xl text-sm md:text-base 
                             font-medium transition-all duration-300 flex items-center gap-2
                             ${selectedDelivery === idx 
-                              ? delivery.paymentStatus === "Paid"
-                                ? 'bg-green-500 text-white shadow-lg'
-                                : 'bg-black text-white shadow-lg'
-                              : delivery.paymentStatus === "Paid"
-                                ? 'bg-green-50 text-green-700 hover:bg-green-100'
-                                : 'bg-white/80 text-gray-600 hover:bg-white'}`}
+                              ? getDeliveryStatusColor(delivery)
+                              : getDeliveryStatusColorInactive(delivery)}`}
                 >
                   {delivery.name}
                   {delivery.paymentStatus === "Paid" && (
                     <Check className="w-4 h-4" />
+                  )}
+                  {delivery.paymentStatus !== "Paid" && paymentMode === "Pay Later" && (
+                    <span className="text-xs">Pay Later</span>
                   )}
                 </button>
               ))}
@@ -2591,6 +2741,7 @@ const PreviewPayment = () => {
             currentFile={currentFile}
             currentDelivery={currentDelivery}
             isDeliveryPaid={isDeliveryPaid}
+            paymentMode={paymentMode}
             currentSlide={currentSlide}
             handlePrevSlide={handlePrevSlide}
             handleNextSlide={handleNextSlide}
@@ -2614,8 +2765,20 @@ const PreviewPayment = () => {
                 </div>
               </div>
               
-              {/* Payment or Download Section */}
-              {isDeliveryPaid ? (
+              {/* Payment Status Indicator for Pay Later */}
+              {!isDeliveryPaid && paymentMode === "Pay Later" && (
+                <div className="p-3 bg-blue-50 border border-blue-100 rounded-lg mb-4">
+                  <div className="flex items-center gap-2">
+                    <Info className="w-5 h-5 text-blue-500" />
+                    <p className="text-sm text-blue-700">
+                      <span className="font-medium">Pay Later:</span> You can download files now and pay later
+                    </p>
+                  </div>
+                </div>
+              )}
+              
+              {/* Payment or Download Section - Updated for Pay Later */}
+              {canDownload ? (
                 <>
                   <div className="space-y-2 mb-4">
                     {currentDelivery.files.map((file) => (
@@ -2636,13 +2799,29 @@ const PreviewPayment = () => {
                   <button
                     onClick={() => handleDownloadDelivery(currentDelivery.files)}
                     disabled={downloading}
-                    className="w-full py-3 bg-green-500 text-white rounded-xl font-medium
+                    className={`w-full py-3 text-white rounded-xl font-medium
                              flex items-center justify-center gap-2 disabled:bg-gray-400
-                             hover:bg-green-600 transition-colors"
+                             transition-colors ${
+                               isDeliveryPaid ? 'bg-green-500 hover:bg-green-600' : 
+                               'bg-blue-500 hover:bg-blue-600'
+                             }`}
                   >
                     <Package className="w-5 h-5" />
                     {downloading ? 'Downloading...' : 'Download All Files'}
                   </button>
+                  
+                  {/* Pay Now button for Pay Later method */}
+                  {!isDeliveryPaid && paymentMode === "Pay Later" && (
+                    <button
+                      onClick={() => handlePayment(currentDelivery.cost, currentDelivery.id, false)}
+                      className="w-full py-3 mt-2 bg-gray-800 text-white rounded-xl font-medium
+                               flex items-center justify-center gap-2 hover:bg-gray-900
+                               transition-colors"
+                    >
+                      <CreditCard className="w-5 h-5" />
+                      Pay Now (₹{currentDelivery.cost})
+                    </button>
+                  )}
                 </>
               ) : (
                 <button
@@ -2713,20 +2892,27 @@ const PreviewPayment = () => {
                           className="flex items-center justify-between text-sm"
                         >
                           <span className="text-gray-600">{delivery.name}</span>
-                          <span className={`px-2 py-0.5 rounded-full text-xs font-medium
-                            ${delivery.paymentStatus === "Paid" 
-                              ? 'bg-green-100 text-green-700'
-                              : 'bg-gray-100 text-gray-700'}`}
-                          >
-                            {delivery.paymentStatus}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className={`px-2 py-0.5 rounded-full text-xs font-medium
+                              ${delivery.paymentStatus === "Paid" 
+                                ? 'bg-green-100 text-green-700'
+                                : 'bg-gray-100 text-gray-700'}`}
+                            >
+                              {delivery.paymentStatus}
+                            </span>
+                            {delivery.paymentStatus !== "Paid" && paymentMode === "Pay Later" && (
+                              <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+                                Pay Later
+                              </span>
+                            )}
+                          </div>
                         </div>
                       ))}
                     </div>
                   </div>
 
                   {/* Pay All Deliveries Button */}
-                  {clientData.deliveries.some(d => d.paymentStatus === "Not Paid") && (
+                  {clientData.deliveries.some(d => d.paymentStatus === "Not Paid") && paymentMode !== "Pay Later" && (
                     <button
                       onClick={() => {
                         const unpaidTotal = clientData.deliveries
@@ -2740,6 +2926,24 @@ const PreviewPayment = () => {
                     >
                       <Package className="w-5 h-5" />
                       Pay for All Deliveries
+                    </button>
+                  )}
+                  
+                  {/* Pay All Deliveries Later Button */}
+                  {clientData.deliveries.some(d => d.paymentStatus === "Not Paid") && paymentMode === "Pay Later" && (
+                    <button
+                      onClick={() => {
+                        const unpaidTotal = clientData.deliveries
+                          .filter(d => d.paymentStatus === "Not Paid")
+                          .reduce((sum, d) => sum + d.cost, 0);
+                        handlePayment(unpaidTotal, null, true);
+                      }}
+                      className="w-full py-3 bg-blue-100 text-blue-700 hover:bg-blue-200 
+                               rounded-xl font-medium flex items-center justify-center gap-2
+                               transition-colors"
+                    >
+                      <Package className="w-5 h-5" />
+                      Pay for All Deliveries Now
                     </button>
                   )}
                 </motion.div>

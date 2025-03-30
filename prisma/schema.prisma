@@ -26,6 +26,7 @@ model Freelancer {
   clients    Client[]  @relation("FreelancerClients") 
   notifications Notification[]
   feedback     FreelancerFeedback[]
+  withdrawals   Withdrawal[]
 
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
@@ -47,6 +48,8 @@ model Client {
   updatedAt    DateTime @updatedAt
   phone        String?      // Optional phone field
   email        String?      // Optional email field
+  note         String?       // Added note field
+  image        String?       // Added image field
 }
 
 model Delivery {
@@ -209,4 +212,18 @@ model RevisionResponse {
   
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
+}
+
+model Withdrawal {
+  id            String    @id @default(cuid())
+  amount        Float
+  status        String    @default("pending") // pending, completed, rejected
+  note          String?   // Admin notes
+  freelancerId  String
+  freelancer    Freelancer @relation(fields: [freelancerId], references: [id])
+  
+  deliveryIds   String[]  // Array of delivery IDs
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 }

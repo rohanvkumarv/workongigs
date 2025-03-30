@@ -16,9 +16,10 @@ const Sidebar = () => {
 
   const menuItems = [
     { icon: Home, label: 'Dashboard', href: `/freelancer/dashboard` },
-    { icon: FolderPlus, label: 'Clients', href:   `/freelancer/clients`},
-    { icon: Plus, label: 'Add New Client', href: `/freelancer/add_new`},
-    { icon: Plus, label: 'Create New Delivery', href: `/freelancer/create_new_delivery`},
+    { icon: FolderPlus, label: 'Chat', href:   `/freelancer/chat`},
+    // { icon: FolderPlus, label: 'Clients', href:   `/freelancer/clients`},
+    // { icon: Plus, label: 'Add New Client', href: `/freelancer/add_new`},
+    // { icon: Plus, label: 'Create New Delivery', href: `/freelancer/create_new_delivery`},
     { icon: Pen, label: 'Revisions', href: `/freelancer/revisions`},
     { icon: HelpCircle, label: 'Support', href: `/freelancer/support`},
     { icon: User, label: 'Profile', href: `/freelancer/profile` }
@@ -236,12 +237,12 @@ const handleLogout = async () => {
         >
           {/* Logo/Brand */}
           <div className="p-6 border-b border-gray-100">
-            <div className="flex items-center gap-3">
+            <a href="/" className="flex items-center gap-3">
               <div className="h-8 w-8 bg-black rounded-lg flex items-center justify-center">
                 <span className="text-white text-xl font-bold">W</span>
               </div>
               <span className="font-medium text-gray-900">WorkOnGigs</span>
-            </div>
+            </a>
           </div>
 
           {/* Navigation Links */}

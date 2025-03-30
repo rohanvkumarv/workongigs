@@ -1,11 +1,13 @@
-// // app/api/freelancer/create-client/route.js
+
 // import { NextResponse } from 'next/server';
 // import { db } from '@/lib/prisma';
 
-// export async function POST(req) {
+// export async function POST(request) {
 //   try {
-//     const body = await req.json();
+//     const body = await request.json();
 //     const { name, modeOfPay, status, email, phone, freelancerId } = body;
+
+//     console.log('Creating client with data:', { name, modeOfPay, status, email, phone, freelancerId });
 
 //     if (!name || !modeOfPay || !freelancerId) {
 //       return NextResponse.json({ 
@@ -14,22 +16,20 @@
 //       }, { status: 400 });
 //     }
 
-//     // Create client with all fields
+//     // Create client with direct freelancerId
 //     const client = await db.client.create({
 //       data: {
 //         name,
-//         phone: phone || null,  // Handle optional fields
-//         email: email || null,  // Handle optional fields
+//         phone: phone || null,
+//         email: email || null,
 //         modeOfPay,
 //         status: status || 'Active',
-//         freelancerId,
-//       },
-//       include: {
-//         deliveries: true
+//         freelancerId: freelancerId
 //       }
 //     });
 
-//     // Return success response with created data
+//     console.log('Client created successfully:', client);
+
 //     return NextResponse.json({ 
 //       success: true, 
 //       client
@@ -49,63 +49,50 @@
 //     // Generic error response
 //     return NextResponse.json({ 
 //       success: false, 
-//       error: error.message
+//       error: error.message,
+//       stack: error.stack // Added for debugging, remove in production
 //     }, { status: 500 });
 //   }
 // }
+
 // app/api/freelancer/create-client/route.js
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/prisma';
 
 export async function POST(request) {
   try {
-    const body = await request.json();
-    const { name, modeOfPay, status, email, phone, freelancerId } = body;
+    const { freelancerId, name, email, phone, modeOfPay, status, note, image } = await request.json();
 
-    console.log('Creating client with data:', { name, modeOfPay, status, email, phone, freelancerId });
-
-    if (!name || !modeOfPay || !freelancerId) {
-      return NextResponse.json({ 
-        success: false, 
-        error: 'Missing required client fields' 
-      }, { status: 400 });
+    if (!freelancerId || !name) {
+      return NextResponse.json(
+        { error: 'Freelancer ID and client name are required' },
+        { status: 400 }
+      );
     }
 
-    // Create client with direct freelancerId
+    // Create the client
     const client = await db.client.create({
       data: {
         name,
-        phone: phone || null,
-        email: email || null,
+        email,
+        phone,
         modeOfPay,
         status: status || 'Active',
-        freelancerId: freelancerId
+        note,
+        image,
+        freelancerId
       }
     });
 
-    console.log('Client created successfully:', client);
-
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      message: 'Client created successfully',
       client
     });
-
   } catch (error) {
-    console.error('Client creation error:', error);
-    
-    // Handle specific database errors
-    if (error.code === 'P2002') {
-      return NextResponse.json({ 
-        success: false, 
-        error: 'A client with this information already exists'
-      }, { status: 409 });
-    }
-
-    // Generic error response
-    return NextResponse.json({ 
-      success: false, 
-      error: error.message,
-      stack: error.stack // Added for debugging, remove in production
-    }, { status: 500 });
+    console.error('Error creating client:', error);
+    return NextResponse.json(
+      { error: 'Failed to create client', details: error.message },
+      { status: 500 }
+    );
   }
 }
