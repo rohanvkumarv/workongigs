@@ -22,7 +22,9 @@ import {
   CreditCard, 
   Layout,
   
-  Bug
+  
+  Bug,
+  Wallet
 } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import Alert from '@/components/Alert';
@@ -36,6 +38,7 @@ const Sidebar = () => {
   // Updated menu items with only the new admin links from the image
   const menuItems = [
     { icon: Home, label: 'Dashboard', href: `/admin/dashboard` },
+    { icon: Wallet, label: 'WithDrawls', href: `/admin/withdrawls` },
     
     { icon: BarChart3, label: 'Analytics', href: `/admin/analytics` },
     { icon: FileText, label: 'Blogs', href: `/admin/blogs` },
