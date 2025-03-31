@@ -1052,7 +1052,7 @@ const ClientsPage = () => {
               
               {/* Phone (Optional) */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Phone (Optional)</label>
+                <label className="text-sm font-medium text-gray-700">Phone</label>
                 <input
                   type="tel"
                   value={newClientForm.phone}
@@ -1209,10 +1209,8 @@ const ClientsPage = () => {
                   onChange={(e) => setEditClientForm({...editClientForm, modeOfPay: e.target.value})}
                   className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-gray-400 focus:ring-0 transition-colors"
                 >
-                  <option value="Direct Payment">Direct Payment</option>
-                  <option value="Bank Transfer">Bank Transfer</option>
-                  <option value="UPI">UPI</option>
-                  <option value="Other">Other</option>
+                   <option value="Direct Payment">Direct Payment</option>
+                   <option value="Pay Later">Pay Later</option>
                 </select>
               </div>
               
@@ -1243,7 +1241,7 @@ const ClientsPage = () => {
               
               {/* Phone (Optional) */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Phone (Optional)</label>
+                <label className="text-sm font-medium text-gray-700">Phone </label>
                 <input
                   type="tel"
                   value={editClientForm.phone}

@@ -889,7 +889,7 @@ const DashboardContent = () => {
                 
                   <a 
                   href="/freelancer/chat"
-                  className="bg-black hover:bg-gray-700 text-white text-sm py-2 px-4 rounded-lg">Add New Client</a>
+                  className="bg-black hover:bg-gray-700 text-white text-sm py-2 px-4 rounded-lg">Add New Delivery</a>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full">
