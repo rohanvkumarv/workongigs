@@ -1,11 +1,11 @@
-   
+
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   Plus, Search, User, ArrowRight, ChevronDown, X, Check, Trash2,
   FileText, Copy, Calendar, DollarSign, Edit, MessageCircle, FileUp, AlertTriangle, 
-  Paperclip, Pencil, Info, Camera, MoreHorizontal, ChevronUp
+  Paperclip, Pencil, Info, Camera, MoreHorizontal, ChevronUp, ArrowLeft
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/authContext';
@@ -27,6 +27,9 @@ const ClientsPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [alert, setAlert] = useState({ show: false, message: '', type: 'success' });
   const [showClientInfo, setShowClientInfo] = useState(false);
+  
+  // Mobile specific state
+  const [showMobileClientDetails, setShowMobileClientDetails] = useState(false);
   
   // Modal states
   const [showNewClientModal, setShowNewClientModal] = useState(false);
@@ -113,6 +116,8 @@ const ClientsPage = () => {
     setSelectedClient(client);
     setSelectedDelivery(null);
     setShowClientInfo(false);
+    // For mobile: show the client details view when a client is selected
+    setShowMobileClientDetails(true);
   };
 
   // Handle delivery selection
@@ -314,6 +319,9 @@ const ClientsPage = () => {
       });
       setPreviewImage('');
       showAlert('Client created successfully', 'success');
+      
+      // For mobile view, show the client details after creating
+      setShowMobileClientDetails(true);
       
       // Refresh clients list
       fetchClients();
@@ -589,9 +597,10 @@ const ClientsPage = () => {
       )}
       
       {/* Main container */}
-      <div className="flex h-[calc(100vh-5px)]">
-        {/* Left sidebar - Clients list */}
-        <div className="w-full md:w-80 lg:w-96 bg-white border-r border-gray-200 flex flex-col h-full relative">
+      <div className="flex flex-col md:flex-row h-[calc(100vh-5px)]">
+        {/* Left sidebar - Clients list - Hidden on mobile when client details are shown */}
+        <div className={`w-full md:w-80 lg:w-96 bg-white border-r border-gray-200 flex flex-col h-full relative transition-all duration-300 
+                        ${showMobileClientDetails ? 'hidden md:flex' : 'flex'}`}>
           {/* Search header */}
           <div className="p-4 border-b border-gray-200">
             <div className="relative mb-4">
@@ -669,10 +678,6 @@ const ClientsPage = () => {
                         <span className="truncate">
                           {client.deliveries?.length || 0} deliveries
                         </span>
-                        {/* <span className="mx-1">•</span> */}
-                        {/* <span className={client.status === 'Active' ? 'text-green-600' : 'text-gray-500'}>
-                          {client.status}
-                        </span> */}
                         {hasRevisions(client) && (
                           <>
                             <span className="mx-1">•</span>
@@ -681,9 +686,7 @@ const ClientsPage = () => {
                         )}
                       </div>
                     </div>
-                    {selectedClient?.id === client.id && (
-                      <ArrowRight className="w-5 h-5 text-gray-400 flex-shrink-0" />
-                    )}
+                    <ArrowRight className="w-5 h-5 text-gray-400 flex-shrink-0" />
                   </button>
                 ))}
               </div>
@@ -702,13 +705,25 @@ const ClientsPage = () => {
           </div>
         </div>
         
-        {/* Right content - Delivery details */}
-        <div className="hidden md:flex flex-col flex-1 h-full relative">
+        {/* Right content - Delivery details - Shown on mobile when client is selected */}
+        <div className={`flex-1 flex flex-col h-full relative bg-white md:bg-transparent transition-all duration-300
+                        ${showMobileClientDetails ? 'flex' : 'hidden md:flex'}`}>
           {selectedClient ? (
             <>
+              {/* Mobile back button header */}
+              <div className="md:hidden p-4 bg-white border-b border-gray-200">
+                <button
+                  onClick={() => setShowMobileClientDetails(false)}
+                  className="flex items-center text-gray-700 font-medium"
+                >
+                  <ArrowLeft className="w-5 h-5 mr-2" />
+                  Back to Clients
+                </button>
+              </div>
+              
               {/* Client header */}
               <div className="p-4 bg-white border-b border-gray-200">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div className="flex items-center">
                     <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center mr-3 overflow-hidden">
                       {selectedClient.image ? (
@@ -724,18 +739,18 @@ const ClientsPage = () => {
                       )}
                     </div>
                     <div>
-                      <div className="flex items-center">
+                      <div className="flex items-center flex-wrap gap-2">
                         <h2 className="font-medium text-gray-900">{selectedClient.name}</h2>
                         <button 
                           onClick={() => setShowClientInfo(!showClientInfo)}
-                          className="ml-2 p-1 rounded-full hover:bg-blue-50 text-blue-500 transition-colors"
+                          className="p-1 rounded-full hover:bg-blue-50 text-blue-500 transition-colors"
                           title={showClientInfo ? "Hide client info" : "Show client info"}
                         >
                           {showClientInfo ? <ChevronUp className="w-4 h-4" /> : <Info className="w-4 h-4" />}
                         </button>
                         <button 
                           onClick={() => handleEditClient(selectedClient)}
-                          className="ml-1 p-1 rounded-full hover:bg-blue-50 text-blue-500 transition-colors"
+                          className="p-1 rounded-full hover:bg-blue-50 text-blue-500 transition-colors"
                           title="Edit client"
                         >
                           <Edit className="w-4 h-4" />
@@ -774,11 +789,11 @@ const ClientsPage = () => {
                       className="overflow-hidden"
                     >
                       <div className="mt-3 p-3 bg-gray-50 rounded-lg">
-                        <div className="grid grid-cols-3 gap-2 text-sm">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 text-sm">
                           {selectedClient.email && (
                             <div>
                               <span className="text-gray-500">Email:</span>
-                              <p className="text-gray-900">{selectedClient.email}</p>
+                              <p className="text-gray-900 break-words">{selectedClient.email}</p>
                             </div>
                           )}
                           {selectedClient.modeOfPay && (
@@ -832,14 +847,14 @@ const ClientsPage = () => {
                           delivery.revisions && delivery.revisions.length > 0 ? 'border-l-4 border-red-500' : ''
                         }`}
                       >
-                        <div className="flex justify-between items-start mb-3">
+                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-3">
                           <h3 
                             className="font-medium text-gray-900 hover:text-black cursor-pointer"
                             onClick={() => handleSelectDelivery(delivery)}
                           >
                             {delivery.name}
                           </h3>
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 flex-wrap">
                             <button
                               onClick={() => togglePaymentStatus(delivery)}
                               className={`px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${
@@ -867,17 +882,16 @@ const ClientsPage = () => {
                             </button>
                           </div>
                         </div>
-                        <div className="grid grid-cols-3 gap-4 text-sm">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 text-sm">
                           <div className="flex items-center text-gray-600">
-                            <Calendar className="w-4 h-4 mr-2" />
+                            <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
                             <span>{new Date(delivery.createdAt).toLocaleDateString()}</span>
                           </div>
                           <div className="flex items-center text-gray-600">
-                            <Paperclip className="w-4 h-4 mr-2" />
+                            <Paperclip className="w-4 h-4 mr-2 flex-shrink-0" />
                             <span>{delivery.files?.length || 0} files</span>
                           </div>
                           <div className="flex items-center text-gray-600">
-                            {/* <DollarSign className="w-4 h-4 mr-2" /> */}
                             <span className="font-medium">₹ {(delivery.cost || 0).toLocaleString()}</span>
                           </div>
                         </div>
@@ -899,14 +913,14 @@ const ClientsPage = () => {
                 )}
               </div>
               
-              {/* New Delivery button (fixed at bottom right) */}
+              {/* New Delivery floating button */}
               <div className="absolute bottom-6 right-6">
                 <button
                   onClick={() => setShowNewDeliveryModal(true)}
-                  className="p-3  h-12 bg-black text-white rounded-lg flex items-center justify-center hover:bg-gray-800 transition-colors shadow-lg"
+                  className="p-3 h-12 bg-black text-white rounded-lg flex items-center justify-center hover:bg-gray-800 transition-colors shadow-lg"
                 >
-                  <Plus className="w-5 h-5" />
-                  <span>Add New Delivery</span>
+                  <Plus className="w-5 h-5 md:mr-2" />
+                  <span className="hidden md:inline">Add New Delivery</span>
                 </button>
               </div>
             </>
@@ -926,378 +940,385 @@ const ClientsPage = () => {
                 <Plus className="w-4 h-4" />
                 <span>Add New Client</span>
               </button>
+              
+              {/* Mobile-only back button when no client is selected */}
+              <button
+                onClick={() => setShowMobileClientDetails(false)}
+                className="mt-4 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg md:hidden flex items-center gap-2"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span>Back to Clients</span>
+              </button>
             </div>
           )}
         </div>
       </div>
- {/* New Client Modal */}
-<AnimatePresence>
-  {showNewClientModal && (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-    >
-      <motion.div
-        initial={{ scale: 0.95, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.95, opacity: 0 }}
-        className="bg-white rounded-2xl max-w-3xl w-full overflow-hidden"
-      >
-        <div className="p-6 border-b border-gray-200">
-          <div className="flex justify-between items-center">
-            <h3 className="text-xl font-semibold text-gray-900">Add New Client</h3>
-            <button
-              onClick={() => {
-                setShowNewClientModal(false);
-                setPreviewImage('');
-              }}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
-        
-        <div className="p-6 max-h-[80vh] overflow-y-auto">
-          <div className="flex flex-col md:flex-row gap-6">
-            {/* Left Column - Client Image */}
-            <div className="flex flex-col items-center">
-              <div 
-                className="relative w-24 h-24 rounded-full overflow-hidden mb-2 border-2 border-gray-200 cursor-pointer"
-                onClick={() => fileInputRef.current?.click()}
-              >
-                {previewImage ? (
-                  <img 
-                    src={previewImage} 
-                    alt="Client" 
-                    className={`object-cover w-full h-full ${uploadingImage ? 'opacity-50' : ''}`}
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-                    <User className="w-10 h-10 text-gray-400" />
-                  </div>
-                )}
-                
-                <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
-                  <Camera className="w-8 h-8 text-white" />
-                </div>
-                
-                {uploadingImage && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-70">
-                    <svg className="animate-spin h-6 w-6 text-black" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                  </div>
-                )}
-              </div>
-              
-              <span className="text-sm text-gray-500">
-                Click to upload profile picture
-              </span>
-              
-              <input 
-                type="file" 
-                ref={fileInputRef} 
-                onChange={handleClientImageChange}
-                accept="image/jpeg, image/png, image/gif, image/webp" 
-                className="hidden" 
-              />
-            </div>
-            
-            {/* Right Column - Form Fields */}
-            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Client Name */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Client Name *</label>
-                <input
-                  type="text"
-                  value={newClientForm.name}
-                  onChange={(e) => setNewClientForm({...newClientForm, name: e.target.value})}
-                  placeholder="Enter client name"
-                  className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-gray-400 focus:ring-0 transition-colors"
-                  required
-                />
-              </div>
-              
-              {/* Payment Mode */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Payment Mode</label>
-                <select
-                  value={newClientForm.modeOfPay}
-                  onChange={(e) => setNewClientForm({...newClientForm, modeOfPay: e.target.value})}
-                  className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-gray-400 focus:ring-0 transition-colors"
-                >
-                  <option value="Direct Payment">Direct Payment</option>
-                  <option value="Pay Later">Pay Later</option>
-                  {/* <option value="Bank Transfer">Bank Transfer</option>
-                  <option value="UPI">UPI</option>
-                  <option value="Other">Other</option> */}
-                </select>
-              </div>
-              
-              {/* Email (Optional) */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Email (Optional)</label>
-                <input
-                  type="email"
-                  value={newClientForm.email}
-                  onChange={(e) => setNewClientForm({...newClientForm, email: e.target.value})}
-                  placeholder="Enter client email"
-                  className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-gray-400 focus:ring-0 transition-colors"
-                />
-              </div>
-              
-              {/* Phone (Optional) */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Phone</label>
-                <input
-                  type="tel"
-                  value={newClientForm.phone}
-                  onChange={(e) => setNewClientForm({...newClientForm, phone: e.target.value})}
-                  placeholder="Enter client phone"
-                  className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-gray-400 focus:ring-0 transition-colors"
-                />
-              </div>
-              
-              {/* Note (Optional) - Full Width */}
-              <div className="space-y-2 md:col-span-2">
-                <label className="text-sm font-medium text-gray-700">Notes (Optional)</label>
-                <textarea
-                  value={newClientForm.note}
-                  onChange={(e) => setNewClientForm({...newClientForm, note: e.target.value})}
-                  placeholder="Add notes about this client"
-                  rows={3}
-                  className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-gray-400 focus:ring-0 transition-colors resize-none"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div className="p-6 border-t border-gray-200 bg-gray-50 flex justify-end gap-3">
-          <button
-            onClick={() => {
-              setShowNewClientModal(false);
-              setPreviewImage('');
-            }}
-            className="px-4 py-2 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-100 transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleCreateClient}
-            disabled={isSubmitting || !newClientForm.name.trim() || uploadingImage}
-            className="px-6 py-2 rounded-lg bg-black text-white hover:bg-gray-800 transition-colors flex items-center disabled:bg-gray-400"
-          >
-            {isSubmitting ? (
-              <>
-                <span className="animate-spin mr-2 h-4 w-4 border-t-2 border-b-2 border-white rounded-full"></span>
-                Creating...
-              </>
-            ) : (
-              <>
-                <Check className="w-4 h-4 mr-1" /> Create Client
-              </>
-            )}
-          </button>
-        </div>
-      </motion.div>
-    </motion.div>
-  )}
-</AnimatePresence>
 
-{/* Edit Client Modal */}
-<AnimatePresence>
-  {showEditClientModal && selectedClient && (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-    >
-      <motion.div
-        initial={{ scale: 0.95, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.95, opacity: 0 }}
-        className="bg-white rounded-2xl max-w-3xl w-full overflow-hidden"
-      >
-        <div className="p-6 border-b border-gray-200">
-          <div className="flex justify-between items-center">
-            <h3 className="text-xl font-semibold text-gray-900">Edit Client</h3>
-            <button
-              onClick={() => {
-                setShowEditClientModal(false);
-                setPreviewImage('');
-              }}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
+      {/* New Client Modal */}
+      <AnimatePresence>
+        {showNewClientModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white rounded-2xl max-w-3xl w-full overflow-hidden max-h-[90vh]"
             >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
-        
-        <div className="p-6 max-h-[80vh] overflow-y-auto">
-          <div className="flex flex-col md:flex-row gap-6">
-            {/* Left Column - Client Image */}
-            <div className="flex flex-col items-center">
-              <div 
-                className="relative w-24 h-24 rounded-full overflow-hidden mb-2 border-2 border-gray-200 cursor-pointer"
-                onClick={() => fileInputRef.current?.click()}
-              >
-                {previewImage || editClientForm.image ? (
-                  <img 
-                    src={previewImage || editClientForm.image} 
-                    alt="Client" 
-                    className={`object-cover w-full h-full ${uploadingImage ? 'opacity-50' : ''}`}
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-                    <User className="w-10 h-10 text-gray-400" />
-                  </div>
-                )}
-                
-                <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
-                  <Camera className="w-8 h-8 text-white" />
+              <div className="p-4 sm:p-6 border-b border-gray-200">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-lg sm:text-xl font-semibold text-gray-900">Add New Client</h3>
+                  <button
+                    onClick={() => {
+                      setShowNewClientModal(false);
+                      setPreviewImage('');
+                    }}
+                    className="text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
                 </div>
-                
-                {uploadingImage && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-70">
-                    <svg className="animate-spin h-6 w-6 text-black" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
+              </div>
+              
+              <div className="p-4 sm:p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
+                <div className="flex flex-col md:flex-row gap-6">
+                  {/* Left Column - Client Image */}
+                  <div className="flex flex-col items-center">
+                    <div 
+                      className="relative w-24 h-24 rounded-full overflow-hidden mb-2 border-2 border-gray-200 cursor-pointer"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      {previewImage ? (
+                        <img 
+                          src={previewImage} 
+                          alt="Client" 
+                          className={`object-cover w-full h-full ${uploadingImage ? 'opacity-50' : ''}`}
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+                          <User className="w-10 h-10 text-gray-400" />
+                        </div>
+                      )}
+                      
+                      <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
+                        <Camera className="w-8 h-8 text-white" />
+                      </div>
+                      
+                      {uploadingImage && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-70">
+                          <svg className="animate-spin h-6 w-6 text-black" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                        </div>
+                      )}
+                    </div>
+                    
+                    <span className="text-sm text-gray-500">
+                      Click to upload profile picture
+                    </span>
+                    
+                    <input 
+                      type="file" 
+                      ref={fileInputRef} 
+                      onChange={handleClientImageChange}
+                      accept="image/jpeg, image/png, image/gif, image/webp" 
+                      className="hidden" 
+                    />
                   </div>
-                )}
+                  
+                  {/* Right Column - Form Fields */}
+                  <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Client Name */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-gray-700">Client Name *</label>
+                      <input
+                        type="text"
+                        value={newClientForm.name}
+                        onChange={(e) => setNewClientForm({...newClientForm, name: e.target.value})}
+                        placeholder="Enter client name"
+                        className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-gray-400 focus:ring-0 transition-colors"
+                        required
+                      />
+                    </div>
+                    
+                    {/* Payment Mode */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-gray-700">Payment Mode</label>
+                      <select
+                        value={newClientForm.modeOfPay}
+                        onChange={(e) => setNewClientForm({...newClientForm, modeOfPay: e.target.value})}
+                        className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-gray-400 focus:ring-0 transition-colors"
+                      >
+                        <option value="Direct Payment">Direct Payment</option>
+                        <option value="Pay Later">Pay Later</option>
+                      </select>
+                    </div>
+                    
+                    {/* Email (Optional) */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-gray-700">Email (Optional)</label>
+                      <input
+                        type="email"
+                        value={newClientForm.email}
+                        onChange={(e) => setNewClientForm({...newClientForm, email: e.target.value})}
+                        placeholder="Enter client email"
+                        className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-gray-400 focus:ring-0 transition-colors"
+                      />
+                    </div>
+                    
+                    {/* Phone (Optional) */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-gray-700">Phone</label>
+                      <input
+                        type="tel"
+                        value={newClientForm.phone}
+                        onChange={(e) => setNewClientForm({...newClientForm, phone: e.target.value})}
+                        placeholder="Enter client phone"
+                        className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-gray-400 focus:ring-0 transition-colors"
+                      />
+                    </div>
+                    
+                    {/* Note (Optional) - Full Width */}
+                    <div className="space-y-2 md:col-span-2">
+                      <label className="text-sm font-medium text-gray-700">Notes (Optional)</label>
+                      <textarea
+                        value={newClientForm.note}
+                        onChange={(e) => setNewClientForm({...newClientForm, note: e.target.value})}
+                        placeholder="Add notes about this client"
+                        rows={3}
+                        className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-gray-400 focus:ring-0 transition-colors resize-none"
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
               
-              <span className="text-sm text-gray-500">
-                Click to {editClientForm.image ? 'change' : 'upload'} profile picture
-              </span>
-              
-              <input 
-                type="file" 
-                ref={fileInputRef} 
-                onChange={handleClientImageChange}
-                accept="image/jpeg, image/png, image/gif, image/webp" 
-                className="hidden" 
-              />
-            </div>
-            
-            {/* Right Column - Form Fields */}
-            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Client Name */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Client Name *</label>
-                <input
-                  type="text"
-                  value={editClientForm.name}
-                  onChange={(e) => setEditClientForm({...editClientForm, name: e.target.value})}
-                  placeholder="Enter client name"
-                  className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-gray-400 focus:ring-0 transition-colors"
-                  required
-                />
-              </div>
-              
-              {/* Payment Mode */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Payment Mode</label>
-                <select
-                  value={editClientForm.modeOfPay}
-                  onChange={(e) => setEditClientForm({...editClientForm, modeOfPay: e.target.value})}
-                  className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-gray-400 focus:ring-0 transition-colors"
+              <div className="p-4 sm:p-6 border-t border-gray-200 bg-gray-50 flex flex-col sm:flex-row justify-end gap-3">
+                <button
+                  onClick={() => {
+                    setShowNewClientModal(false);
+                    setPreviewImage('');
+                  }}
+                  className="px-4 py-2 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-100 transition-colors"
                 >
-                   <option value="Direct Payment">Direct Payment</option>
-                   <option value="Pay Later">Pay Later</option>
-                </select>
-              </div>
-              
-              {/* Status */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Status</label>
-                <select
-                  value={editClientForm.status}
-                  onChange={(e) => setEditClientForm({...editClientForm, status: e.target.value})}
-                  className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-gray-400 focus:ring-0 transition-colors"
+                  Cancel
+                </button>
+                <button
+                  onClick={handleCreateClient}
+                  disabled={isSubmitting || !newClientForm.name.trim() || uploadingImage}
+                  className="px-6 py-2 rounded-lg bg-black text-white hover:bg-gray-800 transition-colors flex items-center justify-center disabled:bg-gray-400"
                 >
-                  <option value="Active">Active</option>
-                  <option value="Inactive">Inactive</option>
-                </select>
+                  {isSubmitting ? (
+                    <>
+                      <span className="animate-spin mr-2 h-4 w-4 border-t-2 border-b-2 border-white rounded-full"></span>
+                      Creating...
+                    </>
+                  ) : (
+                    <>
+                      <Check className="w-4 h-4 mr-1" /> Create Client
+                    </>
+                  )}
+                </button>
               </div>
-              
-              {/* Email (Optional) */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Email (Optional)</label>
-                <input
-                  type="email"
-                  value={editClientForm.email}
-                  onChange={(e) => setEditClientForm({...editClientForm, email: e.target.value})}
-                  placeholder="Enter client email"
-                  className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-gray-400 focus:ring-0 transition-colors"
-                />
-              </div>
-              
-              {/* Phone (Optional) */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Phone </label>
-                <input
-                  type="tel"
-                  value={editClientForm.phone}
-                  onChange={(e) => setEditClientForm({...editClientForm, phone: e.target.value})}
-                  placeholder="Enter client phone"
-                  className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-gray-400 focus:ring-0 transition-colors"
-                />
-              </div>
-              
-              {/* Note (Optional) - Full Width */}
-              <div className="space-y-2 md:col-span-2">
-                <label className="text-sm font-medium text-gray-700">Notes (Optional)</label>
-                <textarea
-                  value={editClientForm.note}
-                  onChange={(e) => setEditClientForm({...editClientForm, note: e.target.value})}
-                  placeholder="Add notes about this client"
-                  rows={3}
-                  className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-gray-400 focus:ring-0 transition-colors resize-none"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div className="p-6 border-t border-gray-200 bg-gray-50 flex justify-end gap-3">
-          <button
-            onClick={() => {
-              setShowEditClientModal(false);
-              setPreviewImage('');
-            }}
-            className="px-4 py-2 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-100 transition-colors"
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Edit Client Modal */}
+      <AnimatePresence>
+        {showEditClientModal && selectedClient && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
           >
-            Cancel
-          </button>
-          <button
-            onClick={handleUpdateClient}
-            disabled={isSubmitting || !editClientForm.name.trim() || uploadingImage}
-            className="px-6 py-2 rounded-lg bg-black text-white hover:bg-gray-800 transition-colors flex items-center disabled:bg-gray-400"
-          >
-            {isSubmitting ? (
-              <>
-                <span className="animate-spin mr-2 h-4 w-4 border-t-2 border-b-2 border-white rounded-full"></span>
-                Updating...
-              </>
-            ) : (
-              <>
-                <Check className="w-4 h-4 mr-1" /> Save Changes
-              </>
-            )}
-          </button>
-        </div>
-      </motion.div>
-    </motion.div>
-  )}
-</AnimatePresence>
-        
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden"
+            >
+              <div className="p-4 sm:p-6 border-b border-gray-200">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-lg sm:text-xl font-semibold text-gray-900">Edit Client</h3>
+                  <button
+                    onClick={() => {
+                      setShowEditClientModal(false);
+                      setPreviewImage('');
+                    }}
+                    className="text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+              
+              <div className="p-4 sm:p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
+                <div className="flex flex-col md:flex-row gap-6">
+                  {/* Left Column - Client Image */}
+                  <div className="flex flex-col items-center">
+                    <div 
+                      className="relative w-24 h-24 rounded-full overflow-hidden mb-2 border-2 border-gray-200 cursor-pointer"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      {previewImage || editClientForm.image ? (
+                        <img 
+                          src={previewImage || editClientForm.image} 
+                          alt="Client" 
+                          className={`object-cover w-full h-full ${uploadingImage ? 'opacity-50' : ''}`}
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+                          <User className="w-10 h-10 text-gray-400" />
+                        </div>
+                      )}
+                      
+                      <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
+                        <Camera className="w-8 h-8 text-white" />
+                      </div>
+                      
+                      {uploadingImage && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-70">
+                          <svg className="animate-spin h-6 w-6 text-black" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                        </div>
+                      )}
+                    </div>
+                    
+                    <span className="text-sm text-gray-500">
+                      Click to {editClientForm.image ? 'change' : 'upload'} profile picture
+                    </span>
+                    
+                    <input 
+                      type="file" 
+                      ref={fileInputRef} 
+                      onChange={handleClientImageChange}
+                      accept="image/jpeg, image/png, image/gif, image/webp" 
+                      className="hidden" 
+                    />
+                  </div>
+                  
+                  {/* Right Column - Form Fields */}
+                  <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Client Name */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-gray-700">Client Name *</label>
+                      <input
+                        type="text"
+                        value={editClientForm.name}
+                        onChange={(e) => setEditClientForm({...editClientForm, name: e.target.value})}
+                        placeholder="Enter client name"
+                        className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-gray-400 focus:ring-0 transition-colors"
+                        required
+                      />
+                    </div>
+                    
+                    {/* Payment Mode */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-gray-700">Payment Mode</label>
+                      <select
+                        value={editClientForm.modeOfPay}
+                        onChange={(e) => setEditClientForm({...editClientForm, modeOfPay: e.target.value})}
+                        className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-gray-400 focus:ring-0 transition-colors"
+                      >
+                         <option value="Direct Payment">Direct Payment</option>
+                         <option value="Pay Later">Pay Later</option>
+                      </select>
+                    </div>
+                    
+                    {/* Status */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-gray-700">Status</label>
+                      <select
+                        value={editClientForm.status}
+                        onChange={(e) => setEditClientForm({...editClientForm, status: e.target.value})}
+                        className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-gray-400 focus:ring-0 transition-colors"
+                      >
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                      </select>
+                    </div>
+                    
+                    {/* Email (Optional) */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-gray-700">Email (Optional)</label>
+                      <input
+                        type="email"
+                        value={editClientForm.email}
+                        onChange={(e) => setEditClientForm({...editClientForm, email: e.target.value})}
+                        placeholder="Enter client email"
+                        className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-gray-400 focus:ring-0 transition-colors"
+                      />
+                    </div>
+                    
+                    {/* Phone (Optional) */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-gray-700">Phone </label>
+                      <input
+                        type="tel"
+                        value={editClientForm.phone}
+                        onChange={(e) => setEditClientForm({...editClientForm, phone: e.target.value})}
+                        placeholder="Enter client phone"
+                        className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-gray-400 focus:ring-0 transition-colors"
+                      />
+                    </div>
+                    
+                    {/* Note (Optional) - Full Width */}
+                    <div className="space-y-2 md:col-span-2">
+                      <label className="text-sm font-medium text-gray-700">Notes (Optional)</label>
+                      <textarea
+                        value={editClientForm.note}
+                        onChange={(e) => setEditClientForm({...editClientForm, note: e.target.value})}
+                        placeholder="Add notes about this client"
+                        rows={3}
+                        className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-gray-400 focus:ring-0 transition-colors resize-none"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="p-4 sm:p-6 border-t border-gray-200 bg-gray-50 flex flex-col sm:flex-row justify-end gap-3">
+                <button
+                  onClick={() => {
+                    setShowEditClientModal(false);
+                    setPreviewImage('');
+                  }}
+                  className="px-4 py-2 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-100 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleUpdateClient}
+                  disabled={isSubmitting || !editClientForm.name.trim() || uploadingImage}
+                  className="px-6 py-2 rounded-lg bg-black text-white hover:bg-gray-800 transition-colors flex items-center justify-center disabled:bg-gray-400"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <span className="animate-spin mr-2 h-4 w-4 border-t-2 border-b-2 border-white rounded-full"></span>
+                      Updating...
+                    </>
+                  ) : (
+                    <>
+                      <Check className="w-4 h-4 mr-1" /> Save Changes
+                    </>
+                  )}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+          
       {/* New Delivery Modal */}
       <AnimatePresence>
         {showNewDeliveryModal && selectedClient && (
@@ -1311,11 +1332,11 @@ const ClientsPage = () => {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white rounded-2xl max-w-2xl w-full overflow-hidden"
+              className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden"
             >
-              <div className="p-6 border-b border-gray-200">
+              <div className="p-4 sm:p-6 border-b border-gray-200">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-xl font-semibold text-gray-900">
+                  <h3 className="text-lg sm:text-xl font-semibold text-gray-900">
                     New Delivery for {selectedClient.name}
                   </h3>
                   <button
@@ -1330,7 +1351,7 @@ const ClientsPage = () => {
                 </div>
               </div>
               
-              <div className="p-6 space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto">
+              <div className="p-4 sm:p-6 space-y-4 overflow-y-auto max-h-[calc(90vh-140px)]">
                 {/* Delivery Name */}
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-gray-700">Delivery Name *</label>
@@ -1386,7 +1407,7 @@ const ClientsPage = () => {
                           <div key={index} className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
                             <div className="flex items-center gap-2">
                               <FileText className="w-4 h-4 text-blue-500" />
-                              <span className="text-sm text-gray-700">{file.name}</span>
+                              <span className="text-sm text-gray-700 truncate max-w-xs">{file.name}</span>
                             </div>
                             <button
                               onClick={() => setUploadedFiles(files => files.filter((_, i) => i !== index))}
@@ -1402,7 +1423,7 @@ const ClientsPage = () => {
                 </div>
               </div>
               
-              <div className="p-6 border-t border-gray-200 bg-gray-50 flex justify-end gap-3">
+              <div className="p-4 sm:p-6 border-t border-gray-200 bg-gray-50 flex flex-col sm:flex-row justify-end gap-3">
                 <button
                   onClick={() => {
                     setShowNewDeliveryModal(false);
@@ -1415,7 +1436,7 @@ const ClientsPage = () => {
                 <button
                   onClick={handleCreateDelivery}
                   disabled={isSubmitting || !newDeliveryForm.name.trim() || !newDeliveryForm.cost}
-                  className="px-6 py-2 rounded-lg bg-black text-white hover:bg-gray-800 transition-colors flex items-center disabled:bg-gray-400"
+                  className="px-6 py-2 rounded-lg bg-black text-white hover:bg-gray-800 transition-colors flex items-center justify-center disabled:bg-gray-400"
                 >
                   {isSubmitting ? (
                     <>
@@ -1449,9 +1470,9 @@ const ClientsPage = () => {
               exit={{ scale: 0.95, opacity: 0 }}
               className="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden"
             >
-              <div className="p-6 border-b border-gray-200">
+              <div className="p-4 sm:p-6 border-b border-gray-200">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-xl font-semibold text-gray-900">
+                  <h3 className="text-lg sm:text-xl font-semibold text-gray-900">
                     {selectedDelivery.name}
                   </h3>
                   <button
@@ -1463,7 +1484,7 @@ const ClientsPage = () => {
                 </div>
               </div>
               
-              <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
+              <div className="p-4 sm:p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
                 <div className="space-y-6">
                   {/* Status and Cost */}
                   <div className="flex flex-wrap gap-4 items-center justify-between">
@@ -1506,12 +1527,12 @@ const ClientsPage = () => {
                             rel="noopener noreferrer"
                             className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors border border-gray-200"
                           >
-                            <div className="flex items-center gap-3">
-                              <FileText className="w-5 h-5 text-gray-500" />
-                              <span className="text-sm text-gray-700">{file.name}</span>
+                            <div className="flex items-center gap-3 min-w-0">
+                              <FileText className="w-5 h-5 text-gray-500 flex-shrink-0" />
+                              <span className="text-sm text-gray-700 truncate">{file.name}</span>
                             </div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs text-gray-500">
+                            <div className="flex items-center gap-2 ml-2">
+                              <span className="text-xs text-gray-500 hidden sm:inline">
                                 {new Date(file.createdAt).toLocaleDateString()}
                               </span>
                               <FileUp className="w-4 h-4 text-gray-400" />
@@ -1528,7 +1549,7 @@ const ClientsPage = () => {
                   </div>
                   
                   {/* Metadata */}
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-1">
                       <h4 className="text-xs font-medium text-gray-500">Created On</h4>
                       <p className="text-sm text-gray-900">
@@ -1551,19 +1572,19 @@ const ClientsPage = () => {
                 </div>
               </div>
               
-              <div className="p-6 border-t border-gray-200 bg-gray-50 flex justify-between">
+              <div className="p-4 sm:p-6 border-t border-gray-200 bg-gray-50 flex flex-col sm:flex-row sm:justify-between gap-3">
                 <button
                   onClick={() => {
                     setShowDeliveryDetailsModal(false);
                     handleEditDelivery(selectedDelivery);
                   }}
-                  className="px-4 py-2 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition-colors flex items-center gap-2"
+                  className="px-4 py-2 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition-colors flex items-center justify-center gap-2"
                 >
                   <Edit className="w-4 h-4" />
                   Edit Delivery
                 </button>
                 
-                <div className="flex gap-3">
+                <div className="flex flex-col sm:flex-row gap-3">
                   <button
                     onClick={() => setShowDeliveryDetailsModal(false)}
                     className="px-4 py-2 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-100 transition-colors"
@@ -1572,7 +1593,7 @@ const ClientsPage = () => {
                   </button>
                   <button
                     onClick={() => copyPreviewLink(selectedClient.id, selectedDelivery.name)}
-                    className="px-4 py-2 rounded-lg bg-black text-white hover:bg-gray-800 transition-colors flex items-center gap-2"
+                    className="px-4 py-2 rounded-lg bg-black text-white hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
                   >
                     <Copy className="w-4 h-4" />
                     Copy Preview Link
@@ -1597,11 +1618,11 @@ const ClientsPage = () => {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white rounded-2xl max-w-3xl w-full relative overflow-hidden"
+              className="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] relative overflow-hidden"
             >
               <div className="sticky top-0 bg-white z-10 border-b border-gray-200">
-                <div className="flex justify-between items-center p-6">
-                  <h3 className="text-xl font-semibold text-gray-900">Edit Delivery</h3>
+                <div className="flex justify-between items-center p-4 sm:p-6">
+                  <h3 className="text-lg sm:text-xl font-semibold text-gray-900">Edit Delivery</h3>
                   <button 
                     onClick={() => {
                       setShowEditDeliveryModal(false);
@@ -1614,7 +1635,7 @@ const ClientsPage = () => {
                 </div>
               </div>
               
-              <div className="p-6 overflow-y-auto max-h-[calc(100vh-200px)]">
+              <div className="p-4 sm:p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
                 <div className="space-y-6">
                   {/* Name */}
                   <div className="space-y-2">
@@ -1671,13 +1692,13 @@ const ClientsPage = () => {
                       <div className="space-y-2">
                         {selectedDelivery.files.map((file, index) => (
                           <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                            <div className="flex items-center space-x-3">
-                              <FileText className="w-5 h-5 text-gray-500" />
-                              <span className="text-sm text-gray-700">{file.name}</span>
+                            <div className="flex items-center space-x-3 min-w-0">
+                              <FileText className="w-5 h-5 text-gray-500 flex-shrink-0" />
+                              <span className="text-sm text-gray-700 truncate">{file.name}</span>
                             </div>
                             <button
                               onClick={() => handleDeleteFile(file.id)}
-                              className="p-1 hover:bg-red-50 rounded-md text-red-500 transition-colors"
+                              className="p-1 hover:bg-red-50 rounded-md text-red-500 transition-colors ml-2"
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>
@@ -1701,13 +1722,13 @@ const ClientsPage = () => {
                         <div className="space-y-2">
                           {uploadedFiles.map((file, index) => (
                             <div key={index} className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-                              <div className="flex items-center space-x-3">
-                                <FileText className="w-5 h-5 text-blue-500" />
-                                <span className="text-sm text-gray-700">{file.name}</span>
+                              <div className="flex items-center space-x-3 min-w-0">
+                                <FileText className="w-5 h-5 text-blue-500 flex-shrink-0" />
+                                <span className="text-sm text-gray-700 truncate">{file.name}</span>
                               </div>
                               <button
                                 onClick={() => setUploadedFiles(files => files.filter((_, i) => i !== index))}
-                                className="p-1 hover:bg-red-50 rounded-md text-red-500 transition-colors"
+                                className="p-1 hover:bg-red-50 rounded-md text-red-500 transition-colors ml-2"
                               >
                                 <Trash2 className="w-4 h-4" />
                               </button>
@@ -1720,7 +1741,7 @@ const ClientsPage = () => {
                 </div>
               </div>
               
-              <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 flex justify-end gap-3">
+              <div className="sticky bottom-0 bg-white border-t border-gray-200 p-4 sm:p-6 flex flex-col sm:flex-row justify-end gap-3">
                 <button
                   onClick={() => {
                     setShowEditDeliveryModal(false);
@@ -1733,7 +1754,7 @@ const ClientsPage = () => {
                 <button
                   onClick={handleUpdateDelivery}
                   disabled={isSubmitting}
-                  className="px-6 py-2 rounded-lg bg-black text-white hover:bg-gray-800 transition-colors flex items-center"
+                  className="px-6 py-2 rounded-lg bg-black text-white hover:bg-gray-800 transition-colors flex items-center justify-center"
                 >
                   {isSubmitting ? (
                     <>

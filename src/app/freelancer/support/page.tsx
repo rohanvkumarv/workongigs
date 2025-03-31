@@ -1,9 +1,122 @@
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/authContext';
-import { AlertCircle, BookPlus, MessageSquare, HelpCircle, Clock, CheckCircle, Loader2, ChevronLeft, ChevronRight ,X } from 'lucide-react';
+import { AlertCircle, BookPlus, MessageSquare, HelpCircle, Clock, CheckCircle, Loader2, ChevronLeft, ChevronRight, X, Eye } from 'lucide-react';
 import Link from 'next/link';
+
+// Feedback Card Component for mobile view
+const FeedbackCard = ({ feedback, onViewDetails }) => {
+  // Functions from parent component
+  const getPriorityColor = (priority) => {
+    switch (priority?.toLowerCase()) {
+      case 'low':
+        return 'bg-green-100 text-green-800';
+      case 'medium':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'high':
+        return 'bg-orange-100 text-orange-800';
+      case 'critical':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getStatusColor = (status) => {
+    switch (status?.toLowerCase()) {
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'in_review':
+        return 'bg-blue-100 text-blue-800';
+      case 'resolved':
+        return 'bg-green-100 text-green-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getTypeIcon = (type) => {
+    switch (type) {
+      case 'bug':
+        return <AlertCircle className="w-5 h-5 text-red-500" />;
+      case 'feature_request':
+        return <BookPlus className="w-5 h-5 text-purple-500" />;
+      case 'general_feedback':
+        return <MessageSquare className="w-5 h-5 text-blue-500" />;
+      case 'support':
+        return <HelpCircle className="w-5 h-5 text-green-500" />;
+      default:
+        return <MessageSquare className="w-5 h-5 text-gray-500" />;
+    }
+  };
+
+  const getTypeLabel = (type) => {
+    switch (type) {
+      case 'bug':
+        return 'Bug Report';
+      case 'feature_request':
+        return 'Feature Request';
+      case 'general_feedback':
+        return 'General Feedback';
+      case 'support':
+        return 'Support Request';
+      default:
+        return type;
+    }
+  };
+
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case 'pending':
+        return <Clock className="w-4 h-4" />;
+      case 'in_review':
+        return <Loader2 className="w-4 h-4" />;
+      case 'resolved':
+        return <CheckCircle className="w-4 h-4" />;
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="bg-white border border-gray-200 rounded-lg p-4 mb-3 shadow-sm">
+      <div className="flex items-center gap-2 mb-2">
+        {getTypeIcon(feedback.type)}
+        <span className="font-medium text-gray-900">{getTypeLabel(feedback.type)}</span>
+      </div>
+      
+      <h3 className="font-medium text-gray-900 mb-2 line-clamp-2">{feedback.title}</h3>
+      
+      <div className="flex flex-wrap gap-2 mb-3">
+        {feedback.priority && (
+          <span className={`px-2 py-1 text-xs font-medium rounded-full ${getPriorityColor(feedback.priority)}`}>
+            {feedback.priority}
+          </span>
+        )}
+        <span className={`flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(feedback.status)}`}>
+          {getStatusIcon(feedback.status)}
+          {feedback.status === 'in_review' ? 'In Review' : 
+            feedback.status.charAt(0).toUpperCase() + feedback.status.slice(1)}
+        </span>
+      </div>
+      
+      <div className="flex justify-between items-center">
+        <span className="text-xs text-gray-500">
+          {new Date(feedback.createdAt).toLocaleDateString()}
+        </span>
+        <button 
+          onClick={() => onViewDetails(feedback)}
+          className="flex items-center gap-1 text-blue-500 text-sm font-medium"
+        >
+          <Eye className="w-4 h-4" />
+          View Details
+        </button>
+      </div>
+    </div>
+  );
+};
 
 const FeedbackPage = () => {
   const { freelancerId } = useAuth();
@@ -194,21 +307,17 @@ const FeedbackPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 p-4 sm:p-6">
       <div className="max-w-5xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">Support & Feedback Center</h1>
-          {/* <Link href="/freelancer/dashboard" className="text-blue-500 hover:text-blue-700 flex items-center">
-            <ChevronLeft className="w-4 h-4 mr-1" />
-            Back to Dashboard
-          </Link> */}
+        <div className="flex items-center justify-between mb-4 sm:mb-6">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Support & Feedback</h1>
         </div>
         
         {/* Tabs */}
-        <div className="bg-white rounded-xl shadow-md mb-6">
+        <div className="bg-white rounded-xl shadow-md mb-4 sm:mb-6">
           <div className="flex border-b">
             <button
-              className={`flex-1 py-4 font-medium text-sm text-center relative ${
+              className={`flex-1 py-3 sm:py-4 font-medium text-sm text-center relative ${
                 activeTab === 'create' ? 'text-black' : 'text-gray-500 hover:text-gray-900'
               }`}
               onClick={() => setActiveTab('create')}
@@ -219,7 +328,7 @@ const FeedbackPage = () => {
               )}
             </button>
             <button
-              className={`flex-1 py-4 font-medium text-sm text-center relative ${
+              className={`flex-1 py-3 sm:py-4 font-medium text-sm text-center relative ${
                 activeTab === 'history' ? 'text-black' : 'text-gray-500 hover:text-gray-900'
               }`}
               onClick={() => setActiveTab('history')}
@@ -234,13 +343,13 @@ const FeedbackPage = () => {
         
         {/* Create Feedback Form */}
         {activeTab === 'create' && (
-          <div className="bg-white rounded-xl shadow-md p-6">
+          <div className="bg-white rounded-xl shadow-md p-4 sm:p-6">
             {submitSuccess ? (
-              <div className="text-center py-8">
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <CheckCircle className="w-8 h-8 text-green-500" />
+              <div className="text-center py-6 sm:py-8">
+                <div className="w-14 h-14 sm:w-16 sm:h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <CheckCircle className="w-7 h-7 sm:w-8 sm:h-8 text-green-500" />
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">Feedback Submitted!</h3>
+                <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">Feedback Submitted!</h3>
                 <p className="text-gray-600 mb-6">Thank you for your feedback. We'll review it soon.</p>
                 <button
                   onClick={() => {
@@ -257,64 +366,64 @@ const FeedbackPage = () => {
                 {!feedbackType ? (
                   // Step 1: Select feedback type
                   <div>
-                    <h2 className="text-xl font-semibold text-gray-900 mb-6">What kind of feedback would you like to provide?</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4 sm:mb-6">What kind of feedback would you like to provide?</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                       <button
                         onClick={() => handleTypeSelection('bug')}
-                        className="p-6 border border-gray-200 rounded-xl hover:border-gray-300 hover:shadow-md transition-all text-left"
+                        className="p-4 sm:p-6 border border-gray-200 rounded-xl hover:border-gray-300 hover:shadow-md transition-all text-left"
                       >
-                        <div className="flex items-start gap-4">
+                        <div className="flex items-start gap-3 sm:gap-4">
                           <div className="p-2 bg-red-100 rounded-lg">
-                            <AlertCircle className="w-6 h-6 text-red-500" />
+                            <AlertCircle className="w-5 h-5 sm:w-6 sm:h-6 text-red-500" />
                           </div>
                           <div>
                             <h3 className="font-semibold text-gray-900 mb-1">Report a Bug</h3>
-                            <p className="text-sm text-gray-600">Let us know about issues you're experiencing with the platform</p>
+                            <p className="text-xs sm:text-sm text-gray-600">Let us know about issues you're experiencing with the platform</p>
                           </div>
                         </div>
                       </button>
                       
                       <button
                         onClick={() => handleTypeSelection('feature_request')}
-                        className="p-6 border border-gray-200 rounded-xl hover:border-gray-300 hover:shadow-md transition-all text-left"
+                        className="p-4 sm:p-6 border border-gray-200 rounded-xl hover:border-gray-300 hover:shadow-md transition-all text-left"
                       >
-                        <div className="flex items-start gap-4">
+                        <div className="flex items-start gap-3 sm:gap-4">
                           <div className="p-2 bg-purple-100 rounded-lg">
-                            <BookPlus className="w-6 h-6 text-purple-500" />
+                            <BookPlus className="w-5 h-5 sm:w-6 sm:h-6 text-purple-500" />
                           </div>
                           <div>
                             <h3 className="font-semibold text-gray-900 mb-1">Request a Feature</h3>
-                            <p className="text-sm text-gray-600">Suggest new features or improvements to enhance your experience</p>
+                            <p className="text-xs sm:text-sm text-gray-600">Suggest new features or improvements to enhance your experience</p>
                           </div>
                         </div>
                       </button>
                       
                       <button
                         onClick={() => handleTypeSelection('general_feedback')}
-                        className="p-6 border border-gray-200 rounded-xl hover:border-gray-300 hover:shadow-md transition-all text-left"
+                        className="p-4 sm:p-6 border border-gray-200 rounded-xl hover:border-gray-300 hover:shadow-md transition-all text-left"
                       >
-                        <div className="flex items-start gap-4">
+                        <div className="flex items-start gap-3 sm:gap-4">
                           <div className="p-2 bg-blue-100 rounded-lg">
-                            <MessageSquare className="w-6 h-6 text-blue-500" />
+                            <MessageSquare className="w-5 h-5 sm:w-6 sm:h-6 text-blue-500" />
                           </div>
                           <div>
                             <h3 className="font-semibold text-gray-900 mb-1">General Feedback</h3>
-                            <p className="text-sm text-gray-600">Share your thoughts about our platform</p>
+                            <p className="text-xs sm:text-sm text-gray-600">Share your thoughts about our platform</p>
                           </div>
                         </div>
                       </button>
                       
                       <button
                         onClick={() => handleTypeSelection('support')}
-                        className="p-6 border border-gray-200 rounded-xl hover:border-gray-300 hover:shadow-md transition-all text-left"
+                        className="p-4 sm:p-6 border border-gray-200 rounded-xl hover:border-gray-300 hover:shadow-md transition-all text-left"
                       >
-                        <div className="flex items-start gap-4">
+                        <div className="flex items-start gap-3 sm:gap-4">
                           <div className="p-2 bg-green-100 rounded-lg">
-                            <HelpCircle className="w-6 h-6 text-green-500" />
+                            <HelpCircle className="w-5 h-5 sm:w-6 sm:h-6 text-green-500" />
                           </div>
                           <div>
                             <h3 className="font-semibold text-gray-900 mb-1">Get Support</h3>
-                            <p className="text-sm text-gray-600">Ask for help with any issues you're facing</p>
+                            <p className="text-xs sm:text-sm text-gray-600">Ask for help with any issues you're facing</p>
                           </div>
                         </div>
                       </button>
@@ -324,7 +433,7 @@ const FeedbackPage = () => {
                   // Step 2: Fill out feedback form
                   <form onSubmit={handleSubmit}>
                     <div className="mb-6">
-                      <div className="flex items-center gap-2 mb-6">
+                      <div className="flex items-center gap-2 mb-4 sm:mb-6">
                         <button
                           type="button"
                           onClick={() => setFeedbackType('')}
@@ -332,7 +441,7 @@ const FeedbackPage = () => {
                         >
                           <ChevronLeft className="w-5 h-5" />
                         </button>
-                        <h2 className="text-xl font-semibold text-gray-900">
+                        <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
                           {getTypeLabel(feedbackType)}
                         </h2>
                       </div>
@@ -382,48 +491,48 @@ const FeedbackPage = () => {
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                               Priority
                             </label>
-                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
                               {feedbackType === 'bug' && (
                                 <>
                                   <button
                                     type="button"
                                     onClick={() => setFormData({...formData, priority: 'low'})}
-                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors
+                                    className={`px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors
                                       ${formData.priority === 'low' 
                                         ? 'bg-green-100 text-green-800 border border-green-300' 
                                         : 'bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100'}`}
                                   >
-                                    Minor inconvenience
+                                    Minor issue
                                   </button>
                                   <button
                                     type="button"
                                     onClick={() => setFormData({...formData, priority: 'medium'})}
-                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors
+                                    className={`px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors
                                       ${formData.priority === 'medium' 
                                         ? 'bg-yellow-100 text-yellow-800 border border-yellow-300' 
                                         : 'bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100'}`}
                                   >
-                                    Affects my workflow
+                                    Affects workflow
                                   </button>
                                   <button
                                     type="button"
                                     onClick={() => setFormData({...formData, priority: 'high'})}
-                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors
+                                    className={`px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors
                                       ${formData.priority === 'high' 
                                         ? 'bg-orange-100 text-orange-800 border border-orange-300' 
                                         : 'bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100'}`}
                                   >
-                                    Prevents completing tasks
+                                    Blocks tasks
                                   </button>
                                   <button
                                     type="button"
                                     onClick={() => setFormData({...formData, priority: 'critical'})}
-                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors
+                                    className={`px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors
                                       ${formData.priority === 'critical' 
                                         ? 'bg-red-100 text-red-800 border border-red-300' 
                                         : 'bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100'}`}
                                   >
-                                    Cannot use platform
+                                    Platform unusable
                                   </button>
                                 </>
                               )}
@@ -432,7 +541,7 @@ const FeedbackPage = () => {
                                   <button
                                     type="button"
                                     onClick={() => setFormData({...formData, priority: 'low'})}
-                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors
+                                    className={`px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors
                                       ${formData.priority === 'low' 
                                         ? 'bg-green-100 text-green-800 border border-green-300' 
                                         : 'bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100'}`}
@@ -442,22 +551,22 @@ const FeedbackPage = () => {
                                   <button
                                     type="button"
                                     onClick={() => setFormData({...formData, priority: 'medium'})}
-                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors
+                                    className={`px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors
                                       ${formData.priority === 'medium' 
                                         ? 'bg-yellow-100 text-yellow-800 border border-yellow-300' 
                                         : 'bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100'}`}
                                   >
-                                    Would improve experience
+                                    Helpful addition
                                   </button>
                                   <button
                                     type="button"
                                     onClick={() => setFormData({...formData, priority: 'high'})}
-                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors
+                                    className={`px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors
                                       ${formData.priority === 'high' 
                                         ? 'bg-orange-100 text-orange-800 border border-orange-300' 
                                         : 'bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100'}`}
                                   >
-                                    Significant improvement
+                                    Important
                                   </button>
                                 </>
                               )}
@@ -466,7 +575,7 @@ const FeedbackPage = () => {
                                   <button
                                     type="button"
                                     onClick={() => setFormData({...formData, priority: 'low'})}
-                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors
+                                    className={`px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors
                                       ${formData.priority === 'low' 
                                         ? 'bg-green-100 text-green-800 border border-green-300' 
                                         : 'bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100'}`}
@@ -476,7 +585,7 @@ const FeedbackPage = () => {
                                   <button
                                     type="button"
                                     onClick={() => setFormData({...formData, priority: 'medium'})}
-                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors
+                                    className={`px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors
                                       ${formData.priority === 'medium' 
                                         ? 'bg-yellow-100 text-yellow-800 border border-yellow-300' 
                                         : 'bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100'}`}
@@ -486,12 +595,12 @@ const FeedbackPage = () => {
                                   <button
                                     type="button"
                                     onClick={() => setFormData({...formData, priority: 'high'})}
-                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors
+                                    className={`px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors
                                       ${formData.priority === 'high' 
                                         ? 'bg-orange-100 text-orange-800 border border-orange-300' 
                                         : 'bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100'}`}
                                   >
-                                    Urgent - blocking work
+                                    Urgent issue
                                   </button>
                                 </>
                               )}
@@ -501,18 +610,18 @@ const FeedbackPage = () => {
                       </div>
                     </div>
                     
-                    <div className="flex justify-end gap-3">
+                    <div className="flex flex-col sm:flex-row justify-end gap-3">
                       <button
                         type="button"
                         onClick={() => setFeedbackType('')}
-                        className="px-6 py-2 border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50 transition-colors"
+                        className="px-6 py-2 border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50 transition-colors w-full sm:w-auto mb-2 sm:mb-0"
                       >
                         Back
                       </button>
                       <button
                         type="submit"
                         disabled={isSubmitting}
-                        className="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors disabled:bg-gray-400 flex items-center"
+                        className="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors disabled:bg-gray-400 flex items-center justify-center w-full sm:w-auto"
                       >
                         {isSubmitting ? (
                           <>
@@ -553,7 +662,19 @@ const FeedbackPage = () => {
               </div>
             ) : (
               <div>
-                <div className="overflow-x-auto">
+                {/* Mobile View - Cards */}
+                <div className="sm:hidden p-4">
+                  {feedbackHistory.map((feedback) => (
+                    <FeedbackCard 
+                      key={feedback.id} 
+                      feedback={feedback} 
+                      onViewDetails={viewFeedbackDetail} 
+                    />
+                  ))}
+                </div>
+                
+                {/* Desktop View - Table */}
+                <div className="hidden sm:block overflow-x-auto">
                   <table className="w-full">
                     <thead className="bg-gray-50">
                       <tr>
@@ -621,13 +742,13 @@ const FeedbackPage = () => {
       
       {/* Feedback Detail Modal */}
       {showDetailModal && selectedFeedback && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-3 sm:p-4">
           <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-200">
+            <div className="p-4 sm:p-6 border-b border-gray-200">
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2">
                   {getTypeIcon(selectedFeedback.type)}
-                  <h3 className="text-xl font-semibold text-gray-900">
+                  <h3 className="text-lg sm:text-xl font-semibold text-gray-900 truncate">
                     {getTypeLabel(selectedFeedback.type)}
                   </h3>
                 </div>
@@ -635,15 +756,15 @@ const FeedbackPage = () => {
                   onClick={() => setShowDetailModal(false)}
                   className="text-gray-500 hover:text-gray-700"
                 >
-                  <X className="w-6 h-6" />
+                  <X className="w-5 h-5 sm:w-6 sm:h-6" />
                 </button>
               </div>
             </div>
             
-            <div className="p-6">
-            <div className="mb-6">
-                <h4 className="text-lg font-semibold text-gray-900 mb-2">{selectedFeedback.title}</h4>
-                <div className="flex gap-3 mb-4">
+            <div className="p-4 sm:p-6">
+              <div className="mb-6">
+                <h4 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">{selectedFeedback.title}</h4>
+                <div className="flex flex-wrap gap-2 sm:gap-3 mb-4">
                   {selectedFeedback.priority && (
                     <span className={`px-2 py-1 text-xs font-medium rounded-full ${getPriorityColor(selectedFeedback.priority)}`}>
                       Priority: {selectedFeedback.priority}
@@ -655,10 +776,10 @@ const FeedbackPage = () => {
                       selectedFeedback.status.charAt(0).toUpperCase() + selectedFeedback.status.slice(1)}
                   </span>
                   <span className="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700">
-                    {new Date(selectedFeedback.createdAt).toLocaleString()}
+                    {new Date(selectedFeedback.createdAt).toLocaleDateString()}
                   </span>
                 </div>
-                <div className="bg-gray-50 p-4 rounded-lg text-gray-700 mb-4">
+                <div className="bg-gray-50 p-3 sm:p-4 rounded-lg text-gray-700 mb-4 text-sm sm:text-base">
                   {selectedFeedback.description}
                 </div>
               </div>
@@ -667,16 +788,16 @@ const FeedbackPage = () => {
               <div className="mb-6">
                 <h5 className="font-semibold text-gray-900 mb-3">Responses</h5>
                 {selectedFeedback.adminResponses && selectedFeedback.adminResponses.length > 0 ? (
-                  <div className="space-y-4">
+                  <div className="space-y-3 sm:space-y-4">
                     {selectedFeedback.adminResponses.map((response) => (
-                      <div key={response.id} className="bg-blue-50 p-4 rounded-lg">
-                        <div className="flex justify-between mb-2">
+                      <div key={response.id} className="bg-blue-50 p-3 sm:p-4 rounded-lg">
+                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-2">
                           <span className="font-medium text-blue-700">Admin Response</span>
-                          <span className="text-sm text-gray-500">
+                          <span className="text-xs sm:text-sm text-gray-500 mt-1 sm:mt-0">
                             {new Date(response.createdAt).toLocaleString()}
                           </span>
                         </div>
-                        <p className="text-gray-700">{response.message}</p>
+                        <p className="text-sm sm:text-base text-gray-700">{response.message}</p>
                       </div>
                     ))}
                   </div>
@@ -692,7 +813,7 @@ const FeedbackPage = () => {
                   <div className="space-y-2">
                     {selectedFeedback.statusChanges.map((change) => (
                       <div key={change.id} className="flex items-center text-sm">
-                        <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center mr-3">
+                        <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center mr-3 flex-shrink-0">
                           {getStatusIcon(change.newStatus)}
                         </div>
                         <div>
