@@ -267,7 +267,173 @@ const AudioPreview = ({ url, filename, isPaid, isPayLater }) => {
     </div>
   );
 };
+// Custom Video Player Component with protected controls
+// Custom Video Player Component with protected controls
+const CustomVideoPlayer = ({ url, isPaid, isPayLater }) => {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const videoRef = useRef(null);
 
+  // Get the appropriate theme color based on payment status
+  const getThemeColor = () => {
+    if (isPaid) return 'bg-green-500 hover:bg-green-600';
+    if (isPayLater) return 'bg-blue-500 hover:bg-blue-600';
+    return 'bg-black hover:bg-gray-800';
+  };
+
+  const formatTime = (time) => {
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
+
+  useEffect(() => {
+    if (videoRef.current) {
+      const handleTimeUpdate = () => {
+        const current = videoRef.current.currentTime;
+        setCurrentTime(current);
+        setProgress((current / videoRef.current.duration) * 100);
+      };
+
+      const handleLoadedMetadata = () => {
+        setDuration(videoRef.current.duration);
+        setIsLoading(false);
+      };
+
+      const handleEnded = () => {
+        setIsPlaying(false);
+        setProgress(0);
+        videoRef.current.currentTime = 0;
+      };
+
+      videoRef.current.addEventListener('timeupdate', handleTimeUpdate);
+      videoRef.current.addEventListener('loadedmetadata', handleLoadedMetadata);
+      videoRef.current.addEventListener('ended', handleEnded);
+
+      return () => {
+        if (videoRef.current) {
+          videoRef.current.removeEventListener('timeupdate', handleTimeUpdate);
+          videoRef.current.removeEventListener('loadedmetadata', handleLoadedMetadata);
+          videoRef.current.removeEventListener('ended', handleEnded);
+        }
+      };
+    }
+  }, []);
+
+  const handlePlayPause = () => {
+    if (isPlaying) {
+      videoRef.current?.pause();
+    } else {
+      videoRef.current?.play();
+    }
+    setIsPlaying(!isPlaying);
+  };
+
+  const handleProgressClick = (e) => {
+    if (videoRef.current) {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const percent = x / rect.width;
+      const newTime = percent * videoRef.current.duration;
+      videoRef.current.currentTime = newTime;
+    }
+  };
+
+  // Skip forward/backward by 10 seconds
+  const handleSkipForward = () => {
+    if (videoRef.current) {
+      videoRef.current.currentTime = Math.min(videoRef.current.currentTime + 10, videoRef.current.duration);
+    }
+  };
+
+  const handleSkipBackward = () => {
+    if (videoRef.current) {
+      videoRef.current.currentTime = Math.max(videoRef.current.currentTime - 10, 0);
+    }
+  };
+
+  return (
+    <div className="relative w-full h-full">
+      {/* Video element without controls */}
+      <video
+        ref={videoRef}
+        src={url}
+        className="w-full h-full object-cover"
+        preload="metadata"
+        playsInline
+        // No 'controls' attribute - we're using our own
+      />
+
+      {/* Custom controls overlay - higher z-index to appear above watermark */}
+      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-4 z-20">
+        {/* Progress bar */}
+        <div 
+          className="w-full h-2 bg-gray-500/50 rounded-full cursor-pointer relative overflow-hidden mb-2"
+          onClick={handleProgressClick}
+        >
+          <div 
+            className={`absolute h-full transition-all duration-100 ${
+              isPaid ? 'bg-green-500' : isPayLater ? 'bg-blue-500' : 'bg-white'
+            }`}
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+
+        {/* Time and controls */}
+        <div className="flex items-center justify-between">
+          {/* Time display */}
+          <div className="text-xs text-white">
+            {isLoading ? (
+              <span>Loading...</span>
+            ) : (
+              <span>{formatTime(currentTime)} / {formatTime(duration)}</span>
+            )}
+          </div>
+
+          {/* Control buttons */}
+          <div className="flex items-center gap-3">
+            {/* Skip backward button */}
+            <button 
+              onClick={handleSkipBackward}
+              className="p-1.5 rounded-full text-white bg-black/30 hover:bg-black/50 transition-colors"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 20V4M5 12L12 4L19 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" transform="rotate(90 12 12)"/>
+              </svg>
+            </button>
+            
+            {/* Play/pause button */}
+            <button 
+              onClick={handlePlayPause}
+              disabled={isLoading}
+              className={`p-3 rounded-full text-white transition-colors duration-200 
+                       disabled:bg-gray-500 ${getThemeColor()}`}
+            >
+              {isPlaying ? (
+                <Pause className="w-4 h-4" />
+              ) : (
+                <Play className="w-4 h-4 ml-0.5" />
+              )}
+            </button>
+            
+            {/* Skip forward button */}
+            <button 
+              onClick={handleSkipForward}
+              className="p-1.5 rounded-full text-white bg-black/30 hover:bg-black/50 transition-colors"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 4V20M19 12L12 20L5 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" transform="rotate(90 12 12)"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 // Media Viewer Component
 const MediaViewer = ({ 
   currentFile, 
@@ -298,86 +464,41 @@ const MediaViewer = ({
     return 'bg-black text-white';
   };
 
-  // const renderMedia = () => {
-  //   const mediaType = getMediaType(currentFile.url);
-  
-  //   switch (mediaType) {
-  //     case 'audio':
-  //       return (
-  //         <AudioPreview 
-  //           url={currentFile.url}
-  //           filename={currentFile.name}
-  //           isPaid={isDeliveryPaid}
-  //           isPayLater={paymentMode === 'Pay Later'}
-  //         />
-  //       );
-      
-  //     case 'video':
-  //       return (
-  //         <div className="relative h-full flex items-center justify-center">
-  //           {canDownload ? (
-  //             <video 
-  //               className="w-full h-full object-cover"
-  //               controls
-  //               src={currentFile.url}
-  //             >
-  //               Your browser does not support the video element.
-  //             </video>
-  //           ) : (
-  //             <div className="text-center">
-  //               <Lock className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-  //               <p className="font-medium text-gray-500">Payment Required to Play Video</p>
-  //             </div>
-  //           )}
-  //         </div>
-  //       );
-      
-  //     default: // Image
-  //       const shouldBlur = !canDownload;
-  //       const commonClassNames = `transition-all duration-300 ${shouldBlur ? 'filter blur-sm' : ''}`;
-        
-  //       return (
-  //         <>
-  //           <img
-  //             src={currentFile.url}
-  //             alt={currentFile.name}
-  //             className={`${commonClassNames} w-full h-full object-cover`}
-  //           />
-  //           {shouldBlur && (
-  //             <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-  //               <div className="text-center text-white px-4">
-  //                 <Lock className="w-6 h-6 mx-auto mb-2" />
-  //                 <p className="font-medium text-sm">Payment Required to View Full Quality</p>
-  //               </div>
-  //             </div>
-  //           )}
-  //         </>
-  //       );
-  //   }
-  // };
-// WatermarkOverlay Component - reusable component for both image and video
-// WatermarkOverlay Component - reusable component for both image and video
+  // WatermarkOverlay Component with lower z-index (below controls)
 const WatermarkOverlay = ({ isPaid }) => {
-  // More prominent watermark for unpaid content, subtle for paid content
-  const opacity = isPaid ? 0.15 : 0.3;
-  const size = isPaid ? '150px' : '100px';
+  // Much more subtle watermark settings
+  const opacity = isPaid ? 0.08 : 0.15;
+  const size = isPaid ? '200px' : '180px';
   
   return (
     <div 
-      className="absolute inset-0 pointer-events-none z-10" 
+      className="absolute inset-0 pointer-events-none z-10" // Lower z-index so controls appear above
       style={{
         backgroundImage: 'url(/watermark/logo.png)',
         backgroundSize: size,
         backgroundRepeat: 'repeat',
         backgroundPosition: 'center',
-        mixBlendMode: 'multiply',
+        mixBlendMode: 'soft-light',
         opacity: opacity
       }}
     />
   );
 };
 
-// Payment indicator that shows as a banner rather than blocking content
+// WatermarkCorner Component with lower z-index (below controls)
+// const WatermarkCorner = () => {
+//   return (
+//     <div className="absolute bottom-4 right-4 pointer-events-none z-10 opacity-25 w-16 h-16"> // Lower z-index
+//       <img 
+//         src="/watermark/logo.png" 
+//         alt="" 
+//         className="w-full h-full object-contain"
+//       />
+//     </div>
+//   );
+// };
+
+// Payment banner with higher z-index to ensure it's above controls
 const PaymentBanner = ({ message }) => {
   return (
     <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-center py-2 z-20">
@@ -389,7 +510,6 @@ const PaymentBanner = ({ message }) => {
   );
 };
 
-// Update your renderMedia function in the MediaViewer component
 const renderMedia = () => {
   const mediaType = getMediaType(currentFile.url);
 
@@ -405,23 +525,27 @@ const renderMedia = () => {
       );
     
     case 'video':
-      // Apply light blur filter for unpaid content, but still allow preview
-      const videoBlur = !canDownload ? 'filter blur-[1px]' : '';
+      // Apply very light blur filter for unpaid content
+      const videoBlur = !canDownload ? 'filter blur-[0.8px]' : '';
       
       return (
         <div className="relative h-full w-full flex items-center justify-center overflow-hidden">
-          <video 
-            className={`w-full h-full object-cover ${videoBlur}`}
-            controls
-            src={currentFile.url}
-          >
-            Your browser does not support the video element.
-          </video>
+          {/* Use our Custom Video Player instead of standard video element */}
+          <div className={`w-full h-full ${videoBlur}`}>
+            <CustomVideoPlayer 
+              url={currentFile.url}
+              isPaid={isDeliveryPaid}
+              isPayLater={paymentMode === 'Pay Later'}
+            />
+          </div>
           
-          {/* Add watermark overlay for all videos */}
+          {/* Add watermark overlay for all videos (z-index: 10) */}
           <WatermarkOverlay isPaid={canDownload} />
           
-          {/* Show payment banner for unpaid content */}
+          {/* Add a single corner watermark (z-index: 10) */}
+          {/* <WatermarkCorner /> */}
+          
+          {/* Show payment banner for unpaid content (z-index: 40) */}
           {!canDownload && (
             <PaymentBanner message="Pay to view full quality video" />
           )}
@@ -430,7 +554,7 @@ const renderMedia = () => {
     
     default: // Image
       // Apply light blur filter for unpaid content, but still show preview
-      const imageBlur = !canDownload ? 'filter blur-[2px]' : '';
+      const imageBlur = !canDownload ? 'filter blur-[1.5px]' : '';
       
       return (
         <div className="relative w-full h-full">
@@ -440,10 +564,13 @@ const renderMedia = () => {
             className={`w-full h-full object-cover ${imageBlur}`}
           />
           
-          {/* Add watermark overlay for all images */}
+          {/* Add watermark overlay for all images (z-index: 10) */}
           <WatermarkOverlay isPaid={canDownload} />
           
-          {/* Show payment banner for unpaid content */}
+          {/* Add a single corner watermark (z-index: 10) */}
+          {/* <WatermarkCorner /> */}
+          
+          {/* Show payment banner for unpaid content (z-index: 40) */}
           {!canDownload && (
             <PaymentBanner message="Pay to view full quality image" />
           )}
