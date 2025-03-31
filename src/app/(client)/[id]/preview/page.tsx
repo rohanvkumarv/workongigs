@@ -9,6 +9,7 @@ import {
   Play, Pause, Loader, ChevronUp, ChevronDown
 } from 'lucide-react';
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
+import DevToolsBlocker from '@/components/DevToolsBlocker'; // Adjust path as needed
 
 // Helper function to determine if files can be downloaded
 const canDownloadFiles = (delivery, paymentMode) => {
@@ -1444,6 +1445,8 @@ const PreviewPayment = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Progress Notifications */}
+      <DevToolsBlocker />
+      
       <AnimatePresence>
         {paymentStatus.show && (
           <PaymentProgress
