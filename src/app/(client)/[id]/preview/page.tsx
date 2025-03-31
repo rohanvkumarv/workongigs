@@ -2893,6 +2893,7 @@ const PreviewPayment = () => {
                         >
                           <span className="text-gray-600">{delivery.name}</span>
                           <div className="flex items-center gap-2">
+                            <span className="text-gray-600">₹{delivery.cost}</span>
                             <span className={`px-2 py-0.5 rounded-full text-xs font-medium
                               ${delivery.paymentStatus === "Paid" 
                                 ? 'bg-green-100 text-green-700'
@@ -2908,6 +2909,9 @@ const PreviewPayment = () => {
                           </div>
                         </div>
                       ))}
+                      <div className="text-right mt-2">
+                        <span className="text-gray-700">Total: ₹{clientData.deliveries.reduce((sum, delivery) => sum + delivery.cost, 0)}</span>
+                      </div>
                     </div>
                   </div>
 

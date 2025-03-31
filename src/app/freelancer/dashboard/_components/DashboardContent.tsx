@@ -884,8 +884,12 @@ const DashboardContent = () => {
           <div className="lg:w-[70%]">
             {/* Recent Deliveries Table */}
             <div className="bg-white rounded-2xl shadow-lg border border-gray-200 mb-6">
-              <div className="p-6 border-b border-gray-200">
+              <div className="p-6 border-b border-gray-200 flex justify-between items-center">
                 <h2 className="text-xl font-semibold">Recent Deliveries</h2>
+                
+                  <a 
+                  href="/freelancer/chat"
+                  className="bg-black hover:bg-gray-700 text-white text-sm py-2 px-4 rounded-lg">Add New Client</a>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full">
