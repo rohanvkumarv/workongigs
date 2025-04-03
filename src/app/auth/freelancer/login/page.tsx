@@ -398,7 +398,7 @@ const handleLogin = async (e) => {
 
           <div className="text-center text-sm text-gray-500">
             Don't have an account?{' '}
-            <a href="/auth/user/signup" className="text-black hover:underline">
+            <a href="/auth/freelancer/signup" className="text-black hover:underline">
               Sign up
             </a>
           </div>
