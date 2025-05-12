@@ -37,7 +37,7 @@ export async function POST(request) {
 
     // Generate a 6-digit OTP
     const otp = crypto.randomInt(100000, 999999).toString();
-    
+    console.log(otp)
     // Hash the OTP before storing
     const hashedOtp = crypto.createHash('sha256').update(otp).digest('hex');
 
