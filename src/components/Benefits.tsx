@@ -121,14 +121,7 @@ const Benefits = () => {
             className="lg:w-1/2"
           >
             <div className="relative aspect-square w-full rounded-2xl overflow-hidden bg-black/5">
-              <dotlottie-player 
-                src="https://lottie.host/d4069ddd-04a3-4be5-84ad-75f1fc880f9d/5oNvd6Mv6u.json"
-                background="transparent" 
-                speed="1" 
-                style={{ width: '100%', height: '100%' }}
-                loop 
-                autoplay
-              />
+            <img src="freelancer.png" alt="Client Benefits" style={{ width: '100%', height: '100%' }} />
             </div>
           </motion.div>
         </div>
@@ -144,14 +137,7 @@ const Benefits = () => {
             className="lg:w-1/2"
           >
             <div className="relative aspect-square w-full rounded-2xl overflow-hidden bg-black/5">
-              <dotlottie-player
-                src="https://lottie.host/e5e57c83-05cc-441b-a8aa-fe34f48b8bb2/knL4kFGno5.json"
-                background="transparent"
-                speed="1"
-                style={{ width: '100%', height: '100%' }}
-                loop
-                autoplay
-              />
+              <img src="client.png" alt="Client Benefits" style={{ width: '100%', height: '100%' }} />
             </div>
           </motion.div>
 
