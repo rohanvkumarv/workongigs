@@ -137,7 +137,7 @@ const Benefits = () => {
             className="lg:w-1/2"
           >
             <div className="relative aspect-square w-full rounded-2xl overflow-hidden bg-black/5">
-              <img src="/img/client.png" alt="Client Benefits" style={{ width: '100%', height: '100%' }} />
+              <img src="/img/client1.png" alt="Client Benefits" style={{ width: '100%', height: '100%' }} />
             </div>
           </motion.div>
 
