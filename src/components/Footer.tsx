@@ -137,10 +137,11 @@ const Footer = () => {
                 Made With Prem by{' '}
                 <a href="https://rohankumar10.me" className="text-black hover:text-gray-800 transition-colors">
                   Rohan Kumar
-                </a> &
-                <a href="http://ditinagrawal.netlify.app" className="text-black hover:text-gray-800 transition-colors">
-                  Ditin Agrawal
                 </a>
+                
+                {/* <a href="http://ditinagrawal.netlify.app" className="text-black hover:text-gray-800 transition-colors">
+                  Ditin Agrawal
+                </a> */}
               </span>
             </div>
           </motion.div>
