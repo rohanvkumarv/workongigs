@@ -1236,7 +1236,7 @@ const ClientsPage = () => {
                     </div>
                     
                     {/* Status */}
-                    {/* <div className="space-y-2">
+                    <div className="space-y-2">
                       <label className="text-sm font-medium text-gray-700">Status</label>
                       <select
                         value={editClientForm.status}
@@ -1246,7 +1246,7 @@ const ClientsPage = () => {
                         <option value="Active">Active</option>
                         <option value="Inactive">Inactive</option>
                       </select>
-                    </div> */}
+                    </div>
                     
                     {/* Email (Optional) */}
                     <div className="space-y-2">
@@ -1663,7 +1663,7 @@ const ClientsPage = () => {
                   </div>
                   
                   {/* Payment Status */}
-                  <div className="space-y-2">
+                  {/* <div className="space-y-2">
                     <label className="text-sm font-medium text-gray-700">Payment Status</label>
                     <select
                       value={editDeliveryForm.PaymentStatus}
@@ -1673,7 +1673,7 @@ const ClientsPage = () => {
                       <option value="Not Paid">Not Paid</option>
                       <option value="Paid">Paid</option>
                     </select>
-                  </div>
+                  </div> */}
                   
                   {/* Description */}
                   <div className="space-y-2">
