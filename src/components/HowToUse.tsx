@@ -72,26 +72,26 @@ const HowToUse = () => {
     {
       image: "https://cdn-icons-png.flaticon.com/512/4341/4341139.png",
       step: "Step One",
-      title: "Upload Project",
-      description: "Upload Files and Provide Project Details"
+      title: "Create your account",
+      description: "After successful registration, you'll be redirected to your dashboard."
     },
     {
       image: "https://cdn-icons-png.flaticon.com/512/4341/4341134.png",
       step: "Step Two",
-      title: "Verification",
-      description: "Verification and Account Creations"
+      title: "Add a new client",
+      description: "Click on 'Add New Client' and fill in the client’s details."
     },
     {
       image: "https://cdn-icons-png.flaticon.com/512/4341/4341160.png",
       step: "Step Three",
-      title: "Preview",
-      description: "Redirect to Preview and Payment Page"
+      title: "Add a new delivery",
+      description: "Select the client and click 'Add Delivery'. Enter the name, cost, and upload the file (image, audio, or video). And… you’re done!"
     },
     {
       image: "https://cdn-icons-png.flaticon.com/512/4341/4341025.png",
       step: "Step Four",
-      title: "Payment",
-      description: "Client Preview and Payment",
+      title: "Copy the delivery link and share it with your client.",
+      description: "Copy the delivery link and share it with your client.",
       isLast: true
     }
   ];
