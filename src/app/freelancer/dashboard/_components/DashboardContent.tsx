@@ -579,7 +579,7 @@ const DashboardContent = () => {
                 <h2 className="text-lg sm:text-xl font-semibold">Recent Deliveries</h2>
                 
                 <a 
-                  href="/freelancer/chat"
+                  href="/freelancer/clients"
                   className="bg-black hover:bg-gray-700 text-white text-xs sm:text-sm py-2 px-3 sm:px-4 rounded-lg flex items-center"
                 >
                   Add New Delivery

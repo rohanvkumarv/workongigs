@@ -154,7 +154,7 @@ const handleVerifyOtp = async () => {
       
         // Short delay before redirect to show success message
         setTimeout(() => {
-          router.push(`/freelancer/add_new`);
+          router.push(`/freelancer/clients`);
         }, 1500);
       }
     } else {

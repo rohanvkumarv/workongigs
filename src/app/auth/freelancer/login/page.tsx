@@ -262,7 +262,7 @@ const handleLogin = async (e) => {
       showAlert("success", "Success", "Login successful! Redirecting...");
       if (data.freelancer?.id) {
         
-        router.push(`/freelancer/dashboard`);
+        router.push(`/freelancer/clients`);
       }
     } else {
       showAlert('error', 'Error', data.error || 'Failed to sign in. Please try again.');
