@@ -55,7 +55,7 @@ const CTA = () => {
               transition={{ duration: 0.6, delay: 0.2 }}
               viewport={{ once: true }}
             >
-              <Link href="/sign-in">
+              <Link href="/auth/freelancer/signup">
                 <CustomButton 
                   className="rounded-xl bg-black text-white hover:bg-gray-900
                            shadow-lg hover:shadow-xl group relative overflow-hidden
