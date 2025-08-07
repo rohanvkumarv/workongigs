@@ -1,28 +1,14 @@
-
+// // Modified FileUploadComponent.js - Add this new prop
 // import React, { useState } from 'react';
 // import { Upload, X, Download, AlertCircle } from 'lucide-react';
 
-// const FileUploadComponent = ({ onUploadComplete }) => {
+// const FileUploadComponent = ({ onUploadComplete, onFilesSelected }) => {
 //   const [files, setFiles] = useState([]);
 //   const [uploadProgress, setUploadProgress] = useState({});
 //   const [uploadedFiles, setUploadedFiles] = useState([]);
 //   const [errors, setErrors] = useState({});
 
 //   const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB chunks as required by S3
-
-//   const createChunks = (file) => {
-//     const chunks = [];
-//     let size = file.size;
-//     let offset = 0;
-    
-//     while (offset < size) {
-//       const chunk = file.slice(offset, offset + CHUNK_SIZE);
-//       chunks.push(chunk);
-//       offset += CHUNK_SIZE;
-//     }
-    
-//     return chunks;
-//   };
 
 //   const uploadFile = async (file) => {
 //     try {
@@ -85,7 +71,7 @@
 //         };
 //       });
   
-//       const uploadedParts = await Promise.all(uploadPromises); // Changed variable name here
+//       const uploadedParts = await Promise.all(uploadPromises);
   
 //       // Step 3: Complete multipart upload
 //       const completeResponse = await fetch("/api/complete-upload", {
@@ -96,7 +82,7 @@
 //         body: JSON.stringify({
 //           uploadId,
 //           key,
-//           parts: uploadedParts, // Use the new variable name here
+//           parts: uploadedParts,
 //         }),
 //       });
   
@@ -121,14 +107,25 @@
 //         ...prev,
 //         [file.name]: 0
 //       }));
+//       setErrors(prev => ({
+//         ...prev,
+//         [file.name]: error.message
+//       }));
 //       throw error;
 //     }
 //   };
   
 //   const handleFileChange = async (e) => {
 //     const newFiles = Array.from(e.target.files);
+    
+//     // TRIGGER CALLBACK IMMEDIATELY when files are selected
+//     if (onFilesSelected && newFiles.length > 0) {
+//       onFilesSelected(newFiles);
+//     }
+    
 //     setFiles(prev => [...prev, ...newFiles]);
     
+//     // Start uploading files
 //     for (const file of newFiles) {
 //       await uploadFile(file);
 //     }
@@ -137,8 +134,15 @@
 //   const handleDrop = async (e) => {
 //     e.preventDefault();
 //     const droppedFiles = Array.from(e.dataTransfer.files);
+    
+//     // TRIGGER CALLBACK IMMEDIATELY when files are dropped
+//     if (onFilesSelected && droppedFiles.length > 0) {
+//       onFilesSelected(droppedFiles);
+//     }
+    
 //     setFiles(prev => [...prev, ...droppedFiles]);
     
+//     // Start uploading files  
 //     for (const file of droppedFiles) {
 //       await uploadFile(file);
 //     }
@@ -185,37 +189,44 @@
 //       </div>
       
 //       {/* Show upload progress for files being uploaded */}
-//       {files.length > 0 && Object.keys(uploadProgress).length > 0 && (
+//       {files.length > 0 && (
 //         <div className="mt-3 space-y-2">
 //           {files.map((file, index) => {
 //             const progress = uploadProgress[file.name];
 //             const error = errors[file.name];
 //             const fileUrl = uploadedFiles[index]?.url;
             
-//             // Only show if currently uploading or has error
-//             if (progress === undefined && !error) return null;
-            
 //             return (
 //               <div key={index} className="flex items-center gap-3 p-2 bg-gray-50 rounded-lg">
 //                 <div className="flex-1 min-w-0">
 //                   <div className="flex items-center justify-between mb-1">
 //                     <p className="text-sm font-medium text-gray-900 truncate">{file.name}</p>
-//                     <span className="text-xs text-gray-500">{progress}%</span>
+//                     <span className="text-xs text-gray-500">
+//                       {progress !== undefined ? `${progress}%` : 'Starting...'}
+//                     </span>
 //                   </div>
 //                   {error ? (
 //                     <div className="flex items-center gap-1 text-red-600 text-xs">
 //                       <AlertCircle className="w-3 h-3" />
 //                       <span>{error}</span>
 //                     </div>
+//                   ) : fileUrl ? (
+//                     <div className="text-xs text-green-600">✅ Upload complete</div>
 //                   ) : (
 //                     <div className="w-full bg-gray-200 rounded-full h-1">
 //                       <div
 //                         className="bg-blue-600 h-1 rounded-full transition-all duration-300"
-//                         style={{ width: `${progress}%` }}
+//                         style={{ width: `${progress || 0}%` }}
 //                       />
 //                     </div>
 //                   )}
 //                 </div>
+//                 <button
+//                   onClick={() => removeFile(index)}
+//                   className="p-1 hover:bg-red-50 rounded-sm text-red-500 transition-colors ml-2 flex-shrink-0"
+//                 >
+//                   <X className="w-4 h-4" />
+//                 </button>
 //               </div>
 //             );
 //           })}
@@ -226,36 +237,17 @@
 // };
 
 // export default FileUploadComponent;
+// Modified FileUploadComponent.js - Add this new prop
 import React, { useState } from 'react';
 import { Upload, X, Download, AlertCircle } from 'lucide-react';
 
-const FileUploadComponent = ({ 
-  onUploadComplete, 
-  onFilesSelected, 
-  onUploadError, 
-  onUploadProgress,
-  disabled = false 
-}) => {
+const FileUploadComponent = ({ onUploadComplete, onFilesSelected, onUploadError }) => {
   const [files, setFiles] = useState([]);
   const [uploadProgress, setUploadProgress] = useState({});
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [errors, setErrors] = useState({});
 
   const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB chunks as required by S3
-
-  const createChunks = (file) => {
-    const chunks = [];
-    let size = file.size;
-    let offset = 0;
-    
-    while (offset < size) {
-      const chunk = file.slice(offset, offset + CHUNK_SIZE);
-      chunks.push(chunk);
-      offset += CHUNK_SIZE;
-    }
-    
-    return chunks;
-  };
 
   const uploadFile = async (file) => {
     try {
@@ -264,11 +256,6 @@ const FileUploadComponent = ({
         ...prev,
         [file.name]: 0
       }));
-      
-      // Notify parent about upload progress
-      if (onUploadProgress) {
-        onUploadProgress(file.name, 0);
-      }
   
       const parts = Math.ceil(file.size / CHUNK_SIZE);
       
@@ -310,16 +297,10 @@ const FileUploadComponent = ({
         // Update progress after each chunk
         completedChunks++;
         const progress = Math.round((completedChunks / totalChunks) * 100);
-        
         setUploadProgress(prev => ({
           ...prev,
           [file.name]: progress
         }));
-        
-        // Notify parent about upload progress
-        if (onUploadProgress) {
-          onUploadProgress(file.name, progress);
-        }
   
         // Get ETag from response headers
         const ETag = uploadResponse.headers.get("ETag").replace(/"/g, '');
@@ -354,7 +335,6 @@ const FileUploadComponent = ({
       const fileInfo = { name: file.name, url: fileUrl };
       setUploadedFiles(prev => [...prev, fileInfo]);
       
-      // Notify parent that upload is complete
       if (onUploadComplete) {
         onUploadComplete(fileInfo);
       }
@@ -362,20 +342,16 @@ const FileUploadComponent = ({
       return fileUrl;
     } catch (error) {
       console.error(`Error uploading ${file.name}:`, error);
-      
-      // Reset progress on error
       setUploadProgress(prev => ({
         ...prev,
         [file.name]: 0
       }));
-      
-      // Set error state
       setErrors(prev => ({
         ...prev,
         [file.name]: error.message
       }));
       
-      // Notify parent about upload error
+      // Notify parent component about upload error
       if (onUploadError) {
         onUploadError(file, error);
       }
@@ -385,47 +361,35 @@ const FileUploadComponent = ({
   };
   
   const handleFileChange = async (e) => {
-    if (disabled) return;
-    
     const newFiles = Array.from(e.target.files);
-    setFiles(prev => [...prev, ...newFiles]);
     
-    // Notify parent that files were selected
-    if (onFilesSelected) {
+    // TRIGGER CALLBACK IMMEDIATELY when files are selected
+    if (onFilesSelected && newFiles.length > 0) {
       onFilesSelected(newFiles);
     }
     
-    // Upload each file
+    setFiles(prev => [...prev, ...newFiles]);
+    
+    // Start uploading files
     for (const file of newFiles) {
-      try {
-        await uploadFile(file);
-      } catch (error) {
-        console.error(`Failed to upload ${file.name}:`, error);
-        // Error is already handled in uploadFile function
-      }
+      await uploadFile(file);
     }
   };
 
   const handleDrop = async (e) => {
     e.preventDefault();
-    if (disabled) return;
-    
     const droppedFiles = Array.from(e.dataTransfer.files);
-    setFiles(prev => [...prev, ...droppedFiles]);
     
-    // Notify parent that files were selected
-    if (onFilesSelected) {
+    // TRIGGER CALLBACK IMMEDIATELY when files are dropped
+    if (onFilesSelected && droppedFiles.length > 0) {
       onFilesSelected(droppedFiles);
     }
     
-    // Upload each file
+    setFiles(prev => [...prev, ...droppedFiles]);
+    
+    // Start uploading files  
     for (const file of droppedFiles) {
-      try {
-        await uploadFile(file);
-      } catch (error) {
-        console.error(`Failed to upload ${file.name}:`, error);
-        // Error is already handled in uploadFile function
-      }
+      await uploadFile(file);
     }
   };
 
@@ -450,62 +414,64 @@ const FileUploadComponent = ({
       <div
         onDrop={handleDrop}
         onDragOver={(e) => e.preventDefault()}
-        className={`w-full h-32 border-2 border-dashed rounded-xl p-6 
-                   text-center transition-colors relative
-                   flex flex-col items-center justify-center ${
-                     disabled 
-                       ? 'border-gray-200 bg-gray-50 cursor-not-allowed' 
-                       : 'border-gray-200 bg-white hover:border-gray-300 cursor-pointer'
-                   }`}
+        className="w-full h-32 border-2 border-dashed border-gray-200 rounded-xl p-6 
+                 bg-white text-center hover:border-gray-300 transition-colors relative
+                 flex flex-col items-center justify-center"
       >
         <input
           type="file"
           multiple
           onChange={handleFileChange}
-          disabled={disabled}
-          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
+          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
         />
-        <Upload className={`w-8 h-8 mx-auto mb-2 ${disabled ? 'text-gray-300' : 'text-gray-400'}`} />
-        <h3 className={`text-base font-medium mb-1 ${disabled ? 'text-gray-400' : 'text-gray-900'}`}>
-          {disabled ? 'Upload disabled during submission' : 'Drop files here or click to upload'}
+        <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+        <h3 className="text-base font-medium text-gray-900 mb-1">
+          Drop files here or click to upload
         </h3>
-        <p className={`text-sm ${disabled ? 'text-gray-300' : 'text-gray-500'}`}>
-          {disabled ? 'Please wait...' : 'Upload your files. We support multiple file uploads.'}
+        <p className="text-sm text-gray-500">
+          Upload your files. We support multiple file uploads.
         </p>
       </div>
       
       {/* Show upload progress for files being uploaded */}
-      {files.length > 0 && Object.keys(uploadProgress).length > 0 && (
+      {files.length > 0 && (
         <div className="mt-3 space-y-2">
           {files.map((file, index) => {
             const progress = uploadProgress[file.name];
             const error = errors[file.name];
             const fileUrl = uploadedFiles[index]?.url;
             
-            // Only show if currently uploading or has error
-            if (progress === undefined && !error) return null;
-            
             return (
               <div key={index} className="flex items-center gap-3 p-2 bg-gray-50 rounded-lg">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-1">
                     <p className="text-sm font-medium text-gray-900 truncate">{file.name}</p>
-                    <span className="text-xs text-gray-500">{progress}%</span>
+                    <span className="text-xs text-gray-500">
+                      {progress !== undefined ? `${progress}%` : 'Starting...'}
+                    </span>
                   </div>
                   {error ? (
                     <div className="flex items-center gap-1 text-red-600 text-xs">
                       <AlertCircle className="w-3 h-3" />
                       <span>{error}</span>
                     </div>
+                  ) : fileUrl ? (
+                    <div className="text-xs text-green-600">✅ Upload complete</div>
                   ) : (
                     <div className="w-full bg-gray-200 rounded-full h-1">
                       <div
                         className="bg-blue-600 h-1 rounded-full transition-all duration-300"
-                        style={{ width: `${progress}%` }}
+                        style={{ width: `${progress || 0}%` }}
                       />
                     </div>
                   )}
                 </div>
+                <button
+                  onClick={() => removeFile(index)}
+                  className="p-1 hover:bg-red-50 rounded-sm text-red-500 transition-colors ml-2 flex-shrink-0"
+                >
+                  <X className="w-4 h-4" />
+                </button>
               </div>
             );
           })}
