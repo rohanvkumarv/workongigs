@@ -1964,8 +1964,8 @@ const DashboardContent = () => {
     }
   };
 
-  const copyPreviewLink = (clientId, deliveryName) => {
-    const previewLink = `${window.location.origin}/${clientId}/preview?delivery=${encodeURIComponent(deliveryName)}`;
+  const copyPreviewLink = (clientId, deliveryId) => {
+    const previewLink = `${window.location.origin}/${clientId}/preview?delivery=${encodeURIComponent(deliveryId)}`;
     navigator.clipboard.writeText(previewLink);
     showNotification('Preview link copied to clipboard', 'success');
   };
@@ -2489,7 +2489,7 @@ const DashboardContent = () => {
                                   <Send className="w-4 h-4" />
                                 </button>
                                 <button
-                                  onClick={() => copyPreviewLink(delivery.client.id, delivery.name)}
+                                  onClick={() => copyPreviewLink(delivery.client.id, delivery.id)}
                                   className="text-gray-500 hover:text-gray-700 transition-colors"
                                   title="Copy preview link"
                                 >

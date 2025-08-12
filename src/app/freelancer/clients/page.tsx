@@ -4022,8 +4022,8 @@ const ClientsPage = () => {
   };
 
   // Copy preview link to clipboard
-  const copyPreviewLink = (clientId, deliveryName) => {
-    const previewLink = generatePreviewUrl(clientId, deliveryName);
+  const copyPreviewLink = (clientId, deliveryId) => {
+    const previewLink = generatePreviewUrl(clientId, deliveryId);
     navigator.clipboard.writeText(previewLink);
     showAlert('Preview link copied to clipboard!', 'success');
   };
@@ -4911,7 +4911,7 @@ const ClientsPage = () => {
                               <Pencil className="w-4 h-4 text-blue-500" />
                             </button>
                             <button
-                              onClick={() => copyPreviewLink(selectedClient.id, delivery.name)}
+                              onClick={() => copyPreviewLink(selectedClient.id, delivery.id)}
                               className="p-1 hover:bg-gray-100 rounded-full transition-colors"
                               title="Copy preview link"
                             >
@@ -5520,7 +5520,7 @@ const ClientsPage = () => {
                     Close
                   </button>
                   <button
-                    onClick={() => copyPreviewLink(selectedClient.id, selectedDelivery.name)}
+                    onClick={() => copyPreviewLink(selectedClient.id, selectedDelivery.id)}
                     className="px-4 py-2 rounded-lg bg-black text-white hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
                   >
                     <Copy className="w-4 h-4" />
