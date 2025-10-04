@@ -17,10 +17,10 @@ const Footer = () => {
       { label: 'Contact Us', href: '/contact' }
     ],
     social: [
-      { label: 'Twitter', href: '#', icon: Twitter },
-      { label: 'Facebook', href: '#', icon: Facebook },
-      { label: 'Instagram', href: '#', icon: Instagram },
-      { label: 'YouTube', href: '#', icon: Youtube }
+      // { label: 'Twitter', href: '#', icon: Twitter },
+      // { label: 'Facebook', href: '#', icon: Facebook },
+      // { label: 'Instagram', href: '#', icon: Instagram },
+      // { label: 'YouTube', href: '#', icon: Youtube }
     ],
     legal: [
       { label: 'Terms of Use', href: '/terms_and_conditions' },

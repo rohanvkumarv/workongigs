@@ -1,40 +1,4 @@
-// // // app/api/check-auth/route.js
-// export const dynamic = 'force-dynamic'
-// import { NextResponse } from 'next/server';
-// import { cookies } from 'next/headers';
 
-// export async function GET() {
-//   try {
-//     const cookieStore = await cookies();
-//     const freelancerCookie = cookieStore.get('freelancerId');
-
-//     if (!freelancerCookie) {
-//       return NextResponse.json({ 
-//         success: false, 
-//         error: 'Not authenticated' 
-//       });
-//     }
-
-//     // Now we can parse the JSON data from the cookie
-//     const freelancerData = JSON.parse(freelancerCookie.value);
-
-//     return NextResponse.json({
-//       success: true,
-//       freelancer: {
-//         id: freelancerData.id,
-//         email: freelancerData.email
-//       }
-//     });
-
-//   } catch (error) {
-//     console.error('Error checking auth:', error);
-//     return NextResponse.json(
-//       { success: false, error: 'Failed to check auth status' },
-//       { status: 500 }
-//     );
-//   }
-// }
-// app/api/check-auth/route.js
 export const dynamic = 'force-dynamic'
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
