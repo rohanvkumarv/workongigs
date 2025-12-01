@@ -248,7 +248,7 @@ const Hero = () => {
                 </a>
               </motion.div>
 
-              <motion.div
+              {/* <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.4 }}
@@ -276,9 +276,9 @@ const Hero = () => {
                     <ArrowRight className="w-4 h-4" />
                   </motion.button>
                 </Link>
-              </motion.div>
+              </motion.div> */}
 
-              <div className="hidden lg:block pt-4">
+              <div className="hidden lg:block pt-16 sm:pt-20">
                 <FeatureStrip />
               </div>
             </div>
