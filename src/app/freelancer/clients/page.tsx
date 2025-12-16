@@ -531,6 +531,7 @@ const ClientsPage = () => {
       
       // Show success modal with preview URL
       setCreatedDelivery({
+        id: newDelivery.id,  
         name: newDelivery.name,
         clientId: selectedClient.id,
         clientName: selectedClient.name
@@ -871,6 +872,7 @@ const ClientsPage = () => {
       {/* Success Modal */}
       <DeliverySuccessModal
         isOpen={showSuccessModal}
+        deliveryId={createdDelivery?.id} 
         onClose={handleSuccessModalClose}
         clientId={createdDelivery?.clientId}
         deliveryName={createdDelivery?.name}
