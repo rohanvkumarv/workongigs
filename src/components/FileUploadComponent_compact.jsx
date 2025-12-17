@@ -127,7 +127,7 @@ const FileUploadComponent = ({
 
   if (compact) {
     return (
-      <label className={`block w-full cursor-pointer ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}>
+      <label className={`cursor-pointer ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}>
         <input
           type="file"
           multiple
@@ -135,10 +135,9 @@ const FileUploadComponent = ({
           disabled={disabled}
           className="hidden"
         />
-        <div className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-2">
-          <Upload className="w-4 h-4" />
-          <span>Add more files</span>
-        </div>
+        <span className="text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors">
+          + Add more
+        </span>
       </label>
     );
   }
