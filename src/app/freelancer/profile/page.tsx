@@ -28,14 +28,22 @@ const ProfileContent = () => {
     country: '',
     pincode: '',
     profession: '',
-    profileImage: ''
+    profileImage: '',
+    bankAccountNumber: '',
+    bankName: '',
+    ifscCode: '',
+    bankEmail: ''
   });
 
   const [isEditing, setIsEditing] = useState(false);
+  const [isEditingBank, setIsEditingBank] = useState(false);
   const [editedData, setEditedData] = useState(userData);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [bankError, setBankError] = useState('');
+  const [bankSuccess, setBankSuccess] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmittingBank, setIsSubmittingBank] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [previewImage, setPreviewImage] = useState('');
 
@@ -140,6 +148,71 @@ const ProfileContent = () => {
       [key]: value
     }));
     if (error) setError('');
+  };
+
+  const validateBankForm = () => {
+    if (editedData.ifscCode && editedData.ifscCode.length !== 11) {
+      setBankError('IFSC code must be 11 characters');
+      return false;
+    }
+    if (editedData.bankEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editedData.bankEmail)) {
+      setBankError('Please enter a valid email address');
+      return false;
+    }
+    return true;
+  };
+
+  const handleBankEdit = async () => {
+    if (isEditingBank) {
+      if (!validateBankForm()) {
+        setTimeout(() => setBankError(''), 3000);
+        return;
+      }
+
+      setIsSubmittingBank(true);
+      try {
+        const response = await fetch('/api/update-banking-info', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            freelancerId,
+            bankAccountNumber: editedData.bankAccountNumber,
+            bankName: editedData.bankName,
+            ifscCode: editedData.ifscCode,
+            bankEmail: editedData.bankEmail
+          })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to update banking information');
+        }
+
+        setUserData(prev => ({
+          ...prev,
+          bankAccountNumber: data.bankingInfo.bankAccountNumber,
+          bankName: data.bankingInfo.bankName,
+          ifscCode: data.bankingInfo.ifscCode,
+          bankEmail: data.bankingInfo.bankEmail
+        }));
+        setBankSuccess('Banking information updated successfully!');
+        setIsEditingBank(false);
+      } catch (error) {
+        console.error('Error:', error);
+        setBankError(error.message || 'Error updating banking information');
+      } finally {
+        setIsSubmittingBank(false);
+        setTimeout(() => {
+          setBankError('');
+          setBankSuccess('');
+        }, 3000);
+      }
+    } else {
+      setIsEditingBank(true);
+    }
   };
 
   const handleImageClick = () => {
@@ -372,29 +445,136 @@ const ProfileContent = () => {
         <div className="bg-white rounded-xl shadow-lg sm:shadow-xl border border-gray-100 overflow-hidden">
           <div className="p-4 sm:p-6 border-b border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-gradient-to-r from-white to-gray-50">
             <div className="flex items-center">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-orange-100 text-orange-500 flex items-center justify-center">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center">
                 <BellRing className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
-              <h2 className="text-lg sm:text-xl font-semibold text-gray-900 ml-3 sm:ml-4">Bank Details</h2>
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900 ml-3 sm:ml-4">Banking Information</h2>
             </div>
-            <span className="px-3 sm:px-4 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-600">
-              Coming Soon
-            </span>
+            <div className="flex gap-3 w-full sm:w-auto">
+              {isEditingBank && (
+                <button
+                  onClick={() => {
+                    setIsEditingBank(false);
+                    setEditedData(userData);
+                    setBankError('');
+                  }}
+                  className="flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex-1 sm:flex-none"
+                  disabled={isSubmittingBank}
+                >
+                  <X className="w-4 h-4 mr-1 sm:mr-2" />
+                  Cancel
+                </button>
+              )}
+              <button
+                onClick={handleBankEdit}
+                disabled={isSubmittingBank}
+                className="flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium transition-all
+                       hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex-1 sm:flex-none"
+                style={{
+                  backgroundColor: isEditingBank ? '#10b981' : '#fff',
+                  color: isEditingBank ? '#fff' : '#10b981',
+                  border: '1px solid #10b981'
+                }}
+              >
+                {isEditingBank ? (
+                  <>
+                    <Save className="w-4 h-4 mr-1 sm:mr-2" />
+                    {isSubmittingBank ? 'Saving...' : 'Save Banking Info'}
+                  </>
+                ) : (
+                  <>
+                    <Edit2 className="w-4 h-4 mr-1 sm:mr-2" />
+                    Edit Banking Info
+                  </>
+                )}
+              </button>
+            </div>
           </div>
 
-          <div className="p-6 sm:p-8 text-center bg-gradient-to-b from-white to-gray-50">
-            <div className="max-w-md mx-auto">
-              <p className="text-sm sm:text-base text-gray-600 mb-4">
-                Bank details section is under development. Soon you'll be able to add your bank information for easy withdrawals.
-              </p>
-              <button
-                disabled
-                className="flex items-center justify-center w-full px-4 py-2 rounded-lg 
-                         bg-gray-100 text-gray-400 cursor-not-allowed hover:bg-gray-100"
-              >
-                Add Bank Details
-                <ChevronRight className="w-4 h-4 ml-2" />
-              </button>
+          {(bankSuccess || bankError) && (
+            <div className={`p-3 sm:p-4 mx-4 sm:mx-6 mt-4 rounded-lg text-sm sm:text-base ${bankSuccess ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+              {bankSuccess || bankError}
+            </div>
+          )}
+
+          <div className="p-4 sm:p-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+              <div className="space-y-1 sm:space-y-2">
+                <label className="text-xs sm:text-sm font-medium text-gray-500">
+                  Bank Account Number
+                </label>
+                {isEditingBank ? (
+                  <input
+                    type="text"
+                    value={editedData.bankAccountNumber || ''}
+                    onChange={(e) => handleFieldChange('bankAccountNumber', e.target.value)}
+                    disabled={isSubmittingBank}
+                    className="w-full px-3 sm:px-4 py-2 text-sm sm:text-base rounded-lg border border-gray-200
+                              focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-colors disabled:opacity-50"
+                    placeholder="Enter bank account number"
+                  />
+                ) : (
+                  <p className="text-sm sm:text-base text-gray-900 py-1 sm:py-2 break-words">{userData.bankAccountNumber || '-'}</p>
+                )}
+              </div>
+
+              <div className="space-y-1 sm:space-y-2">
+                <label className="text-xs sm:text-sm font-medium text-gray-500">
+                  Bank Name
+                </label>
+                {isEditingBank ? (
+                  <input
+                    type="text"
+                    value={editedData.bankName || ''}
+                    onChange={(e) => handleFieldChange('bankName', e.target.value)}
+                    disabled={isSubmittingBank}
+                    className="w-full px-3 sm:px-4 py-2 text-sm sm:text-base rounded-lg border border-gray-200
+                              focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-colors disabled:opacity-50"
+                    placeholder="Enter bank name"
+                  />
+                ) : (
+                  <p className="text-sm sm:text-base text-gray-900 py-1 sm:py-2 break-words">{userData.bankName || '-'}</p>
+                )}
+              </div>
+
+              <div className="space-y-1 sm:space-y-2">
+                <label className="text-xs sm:text-sm font-medium text-gray-500">
+                  IFSC Code
+                </label>
+                {isEditingBank ? (
+                  <input
+                    type="text"
+                    value={editedData.ifscCode || ''}
+                    onChange={(e) => handleFieldChange('ifscCode', e.target.value.toUpperCase())}
+                    disabled={isSubmittingBank}
+                    maxLength={11}
+                    className="w-full px-3 sm:px-4 py-2 text-sm sm:text-base rounded-lg border border-gray-200
+                              focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-colors disabled:opacity-50"
+                    placeholder="Enter IFSC code (11 characters)"
+                  />
+                ) : (
+                  <p className="text-sm sm:text-base text-gray-900 py-1 sm:py-2 break-words">{userData.ifscCode || '-'}</p>
+                )}
+              </div>
+
+              <div className="space-y-1 sm:space-y-2">
+                <label className="text-xs sm:text-sm font-medium text-gray-500">
+                  Email for Payments
+                </label>
+                {isEditingBank ? (
+                  <input
+                    type="email"
+                    value={editedData.bankEmail || ''}
+                    onChange={(e) => handleFieldChange('bankEmail', e.target.value)}
+                    disabled={isSubmittingBank}
+                    className="w-full px-3 sm:px-4 py-2 text-sm sm:text-base rounded-lg border border-gray-200
+                              focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-colors disabled:opacity-50"
+                    placeholder="Enter email for payment notifications"
+                  />
+                ) : (
+                  <p className="text-sm sm:text-base text-gray-900 py-1 sm:py-2 break-words">{userData.bankEmail || '-'}</p>
+                )}
+              </div>
             </div>
           </div>
         </div>
