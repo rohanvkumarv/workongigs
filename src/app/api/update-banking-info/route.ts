@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import prisma from "@/lib/db";
+import { db } from "@/lib/prisma";
 
 export async function POST(request: Request) {
   try {
@@ -22,7 +22,7 @@ export async function POST(request: Request) {
     }
 
     // Update freelancer banking info
-    const updatedFreelancer = await prisma.freelancer.update({
+    const updatedFreelancer = await db.freelancer.update({
       where: { id: freelancerId },
       data: {
         bankAccountNumber,

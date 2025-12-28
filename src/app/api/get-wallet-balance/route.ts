@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import prisma from "@/lib/db";
+import { db } from "@/lib/prisma";
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get freelancer wallet details
-    const freelancer = await prisma.freelancer.findUnique({
+    const freelancer = await db.freelancer.findUnique({
       where: { id: freelancerId },
       select: {
         walletBalance: true,
@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get pending withdrawals amount
-    const pendingWithdrawals = await prisma.withdrawal.aggregate({
+    const pendingWithdrawals = await db.withdrawal.aggregate({
       where: {
         freelancerId,
         status: "pending",

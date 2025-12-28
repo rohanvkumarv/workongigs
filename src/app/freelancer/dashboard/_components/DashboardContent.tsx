@@ -1970,102 +1970,86 @@ const DashboardContent = () => {
     showNotification('Preview link copied to clipboard', 'success');
   };
 
-  // New WithdrawModal implementation
+  // NEW WALLET-BASED WithdrawModal
   const WithdrawModal = () => {
-    const [selectedDeliveries, setSelectedDeliveries] = useState([]);
-    const [paidDeliveries, setPaidDeliveries] = useState([]);
+    const [withdrawAmount, setWithdrawAmount] = useState('');
     const [withdrawalHistory, setWithdrawalHistory] = useState([]);
+    const [walletData, setWalletData] = useState(null);
+    const [bankingInfo, setBankingInfo] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState('');
-    
+
     useEffect(() => {
-      // Fetch paid deliveries and withdrawal history when modal opens
       const fetchData = async () => {
         setIsLoading(true);
         try {
-          // Fetch paid deliveries
-          const deliveriesRes = await fetch(`/api/get-paid-deliveries?freelancerId=${freelancerId}`);
-          if (!deliveriesRes.ok) throw new Error('Failed to fetch deliveries');
-          const deliveriesData = await deliveriesRes.json();
-          setPaidDeliveries(deliveriesData.paidDeliveries);
-          
+          // Fetch wallet balance
+          const walletRes = await fetch(`/api/get-wallet-balance?freelancerId=${freelancerId}`);
+          if (!walletRes.ok) throw new Error('Failed to fetch wallet balance');
+          const walletData = await walletRes.json();
+          setWalletData(walletData);
+
+          // Fetch banking info
+          const bankingRes = await fetch(`/api/get-banking-info?freelancerId=${freelancerId}`);
+          if (!bankingRes.ok) throw new Error('Failed to fetch banking info');
+          const bankingData = await bankingRes.json();
+          setBankingInfo(bankingData.bankingInfo);
+
           // Fetch withdrawal history
           const historyRes = await fetch(`/api/get-withdrawal-history?freelancerId=${freelancerId}`);
           if (!historyRes.ok) throw new Error('Failed to fetch withdrawal history');
           const historyData = await historyRes.json();
-          setWithdrawalHistory(historyData.withdrawalHistory);
+          setWithdrawalHistory(historyData.withdrawalHistory || []);
         } catch (err) {
           console.error('Error fetching data:', err);
-          setError('Failed to load data');
+          setError('Failed to load wallet data');
         } finally {
           setIsLoading(false);
         }
       };
-      
+
       fetchData();
     }, []);
-    
-    const handleSelectDelivery = (deliveryId) => {
-      if (selectedDeliveries.includes(deliveryId)) {
-        setSelectedDeliveries(selectedDeliveries.filter(id => id !== deliveryId));
-      } else {
-        setSelectedDeliveries([...selectedDeliveries, deliveryId]);
-      }
-    };
-    
-    const handleSelectAll = () => {
-      if (selectedDeliveries.length === paidDeliveries.length) {
-        setSelectedDeliveries([]);
-      } else {
-        setSelectedDeliveries(paidDeliveries.map(delivery => delivery.id));
-      }
-    };
-    
-    const getTotalSelectedAmount = () => {
-      return paidDeliveries
-        .filter(delivery => selectedDeliveries.includes(delivery.id))
-        .reduce((sum, delivery) => sum + parseFloat(getDeductedAmount(delivery.cost)), 0);
-    };
-    
-    const getTotalOriginalAmount = () => {
-      return paidDeliveries
-        .filter(delivery => selectedDeliveries.includes(delivery.id))
-        .reduce((sum, delivery) => sum + delivery.cost, 0);
-    };
-    
+
     const handleWithdraw = async () => {
-      if (selectedDeliveries.length === 0) {
-        setError('Please select at least one delivery');
+      const amount = parseFloat(withdrawAmount);
+
+      if (!amount || amount <= 0) {
+        setError('Please enter a valid amount');
         return;
       }
-      
+
+      if (amount > walletData.walletBalance) {
+        setError(`Insufficient balance. Available: ₹${walletData.walletBalance.toFixed(2)}`);
+        return;
+      }
+
       setIsSubmitting(true);
       setError('');
-      
+
       try {
         const res = await fetch('/api/request-withdrawal', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
+          body: JSON.stringify({
             freelancerId,
-            deliveryIds: selectedDeliveries,
-            amount: getTotalOriginalAmount() // Send original amount to API
+            amount
           })
         });
-        
+
         if (!res.ok) {
           const errorData = await res.json();
           throw new Error(errorData.message || 'Failed to submit withdrawal request');
         }
-        
+
         showNotification('Withdrawal request submitted successfully', 'success');
-        
-        // Refresh the dashboard data to update available amount
+
+        // Refresh the dashboard data
         const updatedDashboard = await fetch(`/api/get-dashboard-details?freelancerId=${freelancerId}&timeFrame=${statsTimeFilter}`);
         const updatedData = await updatedDashboard.json();
         setData(updatedData);
-        
+
         setShowWithdrawModal(false);
       } catch (err) {
         console.error('Error processing withdrawal:', err);
@@ -2074,40 +2058,7 @@ const DashboardContent = () => {
         setIsSubmitting(false);
       }
     };
-    
-    // Mobile view deliveries card
-    const DeliverySelectionCard = ({ delivery }) => {
-      const isSelected = selectedDeliveries.includes(delivery.id);
-      const withdrawalAmount = getDeductedAmount(delivery.cost);
-      
-      return (
-        <div 
-          className={`border border-gray-200 rounded-lg p-3 mb-2 ${isSelected ? 'bg-blue-50 border-blue-200' : 'bg-white'}`}
-          onClick={() => handleSelectDelivery(delivery.id)}
-        >
-          <div className="flex items-center">
-            <input 
-              type="checkbox"
-              checked={isSelected}
-              onChange={() => handleSelectDelivery(delivery.id)}
-              onClick={(e) => e.stopPropagation()}
-              className="rounded text-blue-600 focus:ring-blue-500 mr-3"
-            />
-            <div className="flex-1">
-              <p className="font-medium text-gray-900">{delivery.name}</p>
-              <div className="flex justify-between mt-1">
-                <p className="text-sm text-gray-600">{delivery.client.name}</p>
-                <p className="text-sm font-medium">₹{withdrawalAmount}</p>
-              </div>
-              <p className="text-xs text-gray-500 mt-1">
-                {new Date(delivery.createdAt).toLocaleDateString()}
-              </p>
-            </div>
-          </div>
-        </div>
-      );
-    };
-    
+
     if (isLoading) {
       return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -2119,117 +2070,129 @@ const DashboardContent = () => {
         </div>
       );
     }
-    
+
+    const hasBankingInfo = bankingInfo?.bankAccountNumber && bankingInfo?.bankName && bankingInfo?.ifscCode;
+
     return (
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-3">
         <div className="bg-white rounded-2xl p-4 sm:p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg sm:text-xl font-semibold">Withdraw Funds</h3>
-            <button 
+            <button
               onClick={() => setShowWithdrawModal(false)}
               className="text-gray-500 hover:text-gray-700 p-1 rounded-full"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
-          
+
           <div className="space-y-5">
-            {/* Selected Amount */}
-            <div className="bg-gray-100 p-4 rounded-xl">
-              <p className="text-gray-600 text-sm">Selected for withdrawal</p>
-              <p className="text-xl sm:text-2xl font-semibold">₹{getTotalSelectedAmount().toFixed(2)}</p>
+            {/* Wallet Balance */}
+            <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-xl border border-blue-200">
+              <p className="text-blue-700 text-sm mb-1">Available Balance</p>
+              <p className="text-3xl font-bold text-blue-900">₹{walletData?.walletBalance?.toFixed(2) || '0.00'}</p>
+              <div className="mt-2 flex gap-4 text-xs text-blue-700">
+                <span>Pending: ₹{walletData?.pendingWithdrawals?.toFixed(2) || '0.00'}</span>
+                <span>Total Earned: ₹{walletData?.totalEarnings?.toFixed(2) || '0.00'}</span>
+              </div>
             </div>
-            
-            {/* Deliveries Selection */}
-            <div>
-              <div className="flex justify-between items-center mb-2">
-                <h4 className="font-medium text-gray-900">Select Deliveries to Withdraw</h4>
-                <button 
-                  onClick={handleSelectAll}
-                  className="text-sm text-blue-600 hover:text-blue-800"
+
+            {/* Banking Info */}
+            {!hasBankingInfo && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <p className="text-yellow-800 text-sm font-medium">⚠️ Banking information required</p>
+                <p className="text-yellow-700 text-xs mt-1">
+                  Please add your banking details in your{' '}
+                  <Link href="/freelancer/profile" className="underline font-medium">
+                    profile page
+                  </Link>
+                  {' '}before requesting a withdrawal.
+                </p>
+              </div>
+            )}
+
+            {hasBankingInfo && (
+              <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                <p className="text-gray-600 text-sm mb-2 font-medium">Withdrawal will be sent to:</p>
+                <div className="text-sm space-y-1">
+                  <p><span className="text-gray-500">Bank:</span> {bankingInfo.bankName}</p>
+                  <p><span className="text-gray-500">Account:</span> ****{bankingInfo.bankAccountNumber?.slice(-4)}</p>
+                  <p><span className="text-gray-500">IFSC:</span> {bankingInfo.ifscCode}</p>
+                </div>
+                <Link
+                  href="/freelancer/profile"
+                  className="text-xs text-blue-600 hover:text-blue-800 mt-2 inline-block"
                 >
-                  {selectedDeliveries.length === paidDeliveries.length ? 'Deselect All' : 'Select All'}
+                  Edit banking details
+                </Link>
+              </div>
+            )}
+
+            {/* Withdrawal Amount Input */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Enter Amount to Withdraw
+              </label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">₹</span>
+                <input
+                  type="number"
+                  value={withdrawAmount}
+                  onChange={(e) => {
+                    setWithdrawAmount(e.target.value);
+                    setError('');
+                  }}
+                  disabled={!hasBankingInfo}
+                  placeholder="0.00"
+                  className="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+                  step="0.01"
+                  max={walletData?.walletBalance}
+                />
+              </div>
+              <div className="mt-2 flex gap-2">
+                <button
+                  onClick={() => setWithdrawAmount((walletData?.walletBalance / 4).toFixed(2))}
+                  className="px-3 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-md"
+                  disabled={!hasBankingInfo}
+                >
+                  25%
+                </button>
+                <button
+                  onClick={() => setWithdrawAmount((walletData?.walletBalance / 2).toFixed(2))}
+                  className="px-3 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-md"
+                  disabled={!hasBankingInfo}
+                >
+                  50%
+                </button>
+                <button
+                  onClick={() => setWithdrawAmount((walletData?.walletBalance * 0.75).toFixed(2))}
+                  className="px-3 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-md"
+                  disabled={!hasBankingInfo}
+                >
+                  75%
+                </button>
+                <button
+                  onClick={() => setWithdrawAmount(walletData?.walletBalance.toFixed(2))}
+                  className="px-3 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-md"
+                  disabled={!hasBankingInfo}
+                >
+                  100%
                 </button>
               </div>
-              
-              {paidDeliveries.length === 0 ? (
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-center text-gray-500">
-                  No paid deliveries available for withdrawal
-                </div>
-              ) : (
-                <>
-                  {/* Mobile view */}
-                  <div className="block sm:hidden">
-                    {paidDeliveries.map((delivery) => (
-                      <DeliverySelectionCard key={delivery.id} delivery={delivery} />
-                    ))}
-                  </div>
-                  
-                  {/* Desktop view */}
-                  <div className="hidden sm:block border border-gray-200 rounded-lg overflow-hidden">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                            <input 
-                              type="checkbox"
-                              checked={selectedDeliveries.length === paidDeliveries.length && paidDeliveries.length > 0}
-                              onChange={handleSelectAll}
-                              className="rounded text-blue-600 focus:ring-blue-500"
-                            />
-                          </th>
-                          <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Delivery</th>
-                          <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Client</th>
-                          <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                          <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
-                        {paidDeliveries.map((delivery) => {
-                          const withdrawalAmount = getDeductedAmount(delivery.cost);
-                          return (
-                            <tr 
-                              key={delivery.id} 
-                              className={`hover:bg-gray-50 ${selectedDeliveries.includes(delivery.id) ? 'bg-blue-50' : ''}`}
-                              onClick={() => handleSelectDelivery(delivery.id)}
-                            >
-                              <td className="px-4 py-3 whitespace-nowrap">
-                                <input 
-                                  type="checkbox"
-                                  checked={selectedDeliveries.includes(delivery.id)}
-                                  onChange={() => handleSelectDelivery(delivery.id)}
-                                  onClick={(e) => e.stopPropagation()}
-                                  className="rounded text-blue-600 focus:ring-blue-500"
-                                />
-                              </td>
-                              <td className="px-4 py-3 whitespace-nowrap">{delivery.name}</td>
-                              <td className="px-4 py-3 whitespace-nowrap">{delivery.client.name}</td>
-                              <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                                {new Date(delivery.createdAt).toLocaleDateString()}
-                              </td>
-                              <td className="px-4 py-3 whitespace-nowrap font-medium">₹{withdrawalAmount}</td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                </>
-              )}
             </div>
-            
+
             {/* Error message */}
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm">
                 {error}
               </div>
             )}
-            
+
             {/* Submit button */}
             <button
               onClick={handleWithdraw}
-              disabled={isSubmitting || selectedDeliveries.length === 0}
-              className="w-full bg-blue-600 text-white rounded-lg py-2 font-medium hover:bg-blue-700 transition-colors disabled:bg-blue-300"
+              disabled={isSubmitting || !hasBankingInfo || !withdrawAmount || parseFloat(withdrawAmount) <= 0}
+              className="w-full bg-blue-600 text-white rounded-lg py-3 font-medium hover:bg-blue-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
             >
               {isSubmitting ? (
                 <span className="flex items-center justify-center">
@@ -2237,25 +2200,25 @@ const DashboardContent = () => {
                   Processing...
                 </span>
               ) : (
-                `Request Withdrawal (₹${getTotalSelectedAmount().toFixed(2)})`
+                `Request Withdrawal${withdrawAmount ? ` (₹${parseFloat(withdrawAmount).toFixed(2)})` : ''}`
               )}
             </button>
-            
+
             {/* Withdrawal History */}
             {withdrawalHistory.length > 0 && (
-              <div className="mt-4">
-                <h4 className="font-medium text-gray-900 mb-3">Withdrawal History</h4>
-                <div className="space-y-3">
-                  {withdrawalHistory.map((withdrawal) => (
-                    <div 
-                      key={withdrawal.id} 
-                      className="border border-gray-200 rounded-lg p-3"
+              <div className="mt-6 pt-6 border-t border-gray-200">
+                <h4 className="font-medium text-gray-900 mb-3">Recent Withdrawals</h4>
+                <div className="space-y-3 max-h-64 overflow-y-auto">
+                  {withdrawalHistory.slice(0, 5).map((withdrawal) => (
+                    <div
+                      key={withdrawal.id}
+                      className="border border-gray-200 rounded-lg p-3 bg-gray-50"
                     >
                       <div className="flex justify-between items-center mb-2">
-                        <p className="font-medium">₹{getDeductedAmount(withdrawal.amount)}</p>
-                        <span className={`px-2 py-1 rounded-full text-xs ${
-                          withdrawal.status === 'completed' 
-                            ? 'bg-green-100 text-green-800' 
+                        <p className="font-medium text-gray-900">₹{withdrawal.amount.toFixed(2)}</p>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          withdrawal.status === 'completed'
+                            ? 'bg-green-100 text-green-800'
                             : withdrawal.status === 'rejected'
                               ? 'bg-red-100 text-red-800'
                               : 'bg-yellow-100 text-yellow-800'
@@ -2264,11 +2227,11 @@ const DashboardContent = () => {
                         </span>
                       </div>
                       <p className="text-xs text-gray-500">
-                        {new Date(withdrawal.createdAt).toLocaleDateString()} • 
+                        {new Date(withdrawal.createdAt).toLocaleDateString()} •
                         {new Date(withdrawal.createdAt).toLocaleTimeString()}
                       </p>
                       {withdrawal.note && (
-                        <p className="mt-2 text-sm border-t pt-2 border-gray-100 text-gray-600">
+                        <p className="mt-2 text-sm border-t pt-2 border-gray-200 text-gray-600">
                           {withdrawal.note}
                         </p>
                       )}

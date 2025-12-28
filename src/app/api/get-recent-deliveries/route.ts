@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import prisma from "@/lib/db";
+import { db } from "@/lib/prisma";
 
 export async function GET(request: NextRequest) {
   try {
@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     const skip = (page - 1) * limit;
 
     // Get total count
-    const totalCount = await prisma.delivery.count({
+    const totalCount = await db.delivery.count({
       where: {
         client: {
           freelancerId
@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Get deliveries with pagination
-    const deliveries = await prisma.delivery.findMany({
+    const deliveries = await db.delivery.findMany({
       where: {
         client: {
           freelancerId

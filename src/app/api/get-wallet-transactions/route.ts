@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import prisma from "@/lib/db";
+import { db } from "@/lib/prisma";
 
 export async function GET(request: NextRequest) {
   try {
@@ -18,12 +18,12 @@ export async function GET(request: NextRequest) {
     const skip = (page - 1) * limit;
 
     // Get total count
-    const totalCount = await prisma.walletTransaction.count({
+    const totalCount = await db.walletTransaction.count({
       where: { freelancerId },
     });
 
     // Get transactions
-    const transactions = await prisma.walletTransaction.findMany({
+    const transactions = await db.walletTransaction.findMany({
       where: { freelancerId },
       orderBy: { createdAt: "desc" },
       skip,
