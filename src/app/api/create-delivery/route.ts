@@ -11,15 +11,18 @@ export async function POST(req: Request) {
         currency,
         desc,
         files,
-        PaymentStatus
+        PaymentStatus,
+        allowDownloadWithoutPayment,
+        includePreviousAmount,
+        bundledDeliveryIds
       }
     } = await req.json();
 
     // Input validation
     if (!clientId || !name || !cost || !files || files.length === 0) {
-      return Response.json({ 
-        success: false, 
-        error: 'Missing required fields' 
+      return Response.json({
+        success: false,
+        error: 'Missing required fields'
       }, { status: 400 });
     }
 
@@ -31,6 +34,9 @@ export async function POST(req: Request) {
         cost: parseFloat(cost),
         PaymentStatus: PaymentStatus || 'Not Paid',
         clientId,
+        allowDownloadWithoutPayment: allowDownloadWithoutPayment || false,
+        includePreviousAmount: includePreviousAmount || false,
+        bundledDeliveryIds: bundledDeliveryIds || []
       },
     });
 

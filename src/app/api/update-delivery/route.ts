@@ -107,13 +107,16 @@ import { db } from '@/lib/prisma';
 export async function PUT(request: Request) {
   try {
     const body = await request.json();
-    const { 
-      deliveryId, 
-      name, 
-      desc, 
+    const {
+      deliveryId,
+      name,
+      desc,
       cost,
-      paymentStatus, 
-      files
+      paymentStatus,
+      files,
+      allowDownloadWithoutPayment,
+      includePreviousAmount,
+      bundledDeliveryIds
     } = body;
 
     if (!deliveryId) {
@@ -142,6 +145,9 @@ export async function PUT(request: Request) {
     if (desc !== undefined) updateData.desc = desc;
     if (cost !== undefined) updateData.cost = parseFloat(cost.toString());
     if (paymentStatus !== undefined) updateData.PaymentStatus = paymentStatus;
+    if (allowDownloadWithoutPayment !== undefined) updateData.allowDownloadWithoutPayment = allowDownloadWithoutPayment;
+    if (includePreviousAmount !== undefined) updateData.includePreviousAmount = includePreviousAmount;
+    if (bundledDeliveryIds !== undefined) updateData.bundledDeliveryIds = bundledDeliveryIds;
 
     // Update the delivery
     const updatedDelivery = await db.delivery.update({

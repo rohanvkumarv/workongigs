@@ -125,9 +125,37 @@ export const POST = async (req: Request) => {
 
     if (generatedSignature === razorpay_signature) {
       console.log("Signature verified successfully");
-      
+
+      let totalAmount = 0;
+      let freelancerId = "";
+      let deliveryNames: string[] = [];
+
       if (payAllDeliveries) {
         console.log("Updating all unpaid deliveries for client:", clientId);
+
+        // Get all unpaid deliveries with client info
+        const unpaidDeliveries = await db.delivery.findMany({
+          where: {
+            clientId: clientId,
+            PaymentStatus: "Not Paid"
+          },
+          include: {
+            client: {
+              select: {
+                freelancerId: true
+              }
+            }
+          }
+        });
+
+        // Calculate total amount
+        totalAmount = unpaidDeliveries.reduce((sum, d) => sum + d.cost, 0);
+        deliveryNames = unpaidDeliveries.map(d => d.name);
+        if (unpaidDeliveries.length > 0) {
+          freelancerId = unpaidDeliveries[0].client.freelancerId;
+        }
+
+        // Update all to paid
         await db.delivery.updateMany({
           where: {
             clientId: clientId,
@@ -139,19 +167,98 @@ export const POST = async (req: Request) => {
         });
       } else {
         console.log("Updating single delivery:", deliveryId);
+
+        // Get delivery with bundled deliveries if applicable
+        const delivery = await db.delivery.findUnique({
+          where: { id: deliveryId },
+          include: {
+            client: {
+              select: {
+                freelancerId: true
+              }
+            }
+          }
+        });
+
+        if (!delivery) {
+          throw new Error("Delivery not found");
+        }
+
+        freelancerId = delivery.client.freelancerId;
+        totalAmount = delivery.cost;
+        deliveryNames.push(delivery.name);
+
+        // If delivery includes bundled deliveries, update them too
+        if (delivery.includePreviousAmount && delivery.bundledDeliveryIds.length > 0) {
+          const bundledDeliveries = await db.delivery.findMany({
+            where: {
+              id: { in: delivery.bundledDeliveryIds }
+            }
+          });
+
+          totalAmount += bundledDeliveries.reduce((sum, d) => sum + d.cost, 0);
+          deliveryNames.push(...bundledDeliveries.map(d => d.name));
+
+          // Update bundled deliveries to paid
+          await db.delivery.updateMany({
+            where: {
+              id: { in: delivery.bundledDeliveryIds }
+            },
+            data: {
+              PaymentStatus: "Paid"
+            }
+          });
+        }
+
+        // Update main delivery to paid
         await db.delivery.update({
-          where: {
-            id: deliveryId
-          },
+          where: { id: deliveryId },
           data: {
             PaymentStatus: "Paid"
           }
         });
       }
-      
-      return new NextResponse(JSON.stringify({ 
+
+      // Credit wallet and create transaction
+      if (freelancerId && totalAmount > 0) {
+        // Get current wallet balance
+        const freelancer = await db.freelancer.findUnique({
+          where: { id: freelancerId },
+          select: { walletBalance: true }
+        });
+
+        const balanceBefore = freelancer?.walletBalance || 0;
+        const balanceAfter = balanceBefore + totalAmount;
+
+        // Update freelancer wallet
+        await db.freelancer.update({
+          where: { id: freelancerId },
+          data: {
+            walletBalance: { increment: totalAmount },
+            totalEarnings: { increment: totalAmount }
+          }
+        });
+
+        // Create wallet transaction
+        await db.walletTransaction.create({
+          data: {
+            freelancerId,
+            type: "CREDIT",
+            amount: totalAmount,
+            description: `Payment for: ${deliveryNames.join(", ")}`,
+            referenceId: deliveryId || clientId,
+            balanceBefore,
+            balanceAfter,
+            status: "completed"
+          }
+        });
+
+        console.log(`Wallet credited: ₹${totalAmount} for freelancer ${freelancerId}`);
+      }
+
+      return new NextResponse(JSON.stringify({
         success: true,
-        payment_id: razorpay_payment_id 
+        payment_id: razorpay_payment_id
       }), {
         status: 200,
         headers: {

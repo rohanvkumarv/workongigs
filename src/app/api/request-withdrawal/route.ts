@@ -5,68 +5,89 @@ import { db } from '@/lib/prisma';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { freelancerId, deliveryIds, amount } = body;
-    
-    if (!freelancerId || !deliveryIds || !deliveryIds.length || !amount || amount <= 0) {
+    const { freelancerId, amount } = body;
+
+    if (!freelancerId || !amount || amount <= 0) {
       return NextResponse.json(
-        { message: 'Invalid withdrawal request' },
+        { message: 'Invalid withdrawal request. Amount must be greater than 0.' },
         { status: 400 }
       );
     }
-    
-    // Verify these deliveries exist and belong to this freelancer
-    const deliveries = await db.delivery.findMany({
-      where: {
-        id: { in: deliveryIds },
-        client: {
-          freelancerId: freelancerId
-        },
-        PaymentStatus: 'Paid',
-        withdrawStatus: 'no'
+
+    // Get freelancer wallet balance
+    const freelancer = await db.freelancer.findUnique({
+      where: { id: freelancerId },
+      select: {
+        walletBalance: true,
+        bankAccountNumber: true,
+        bankName: true,
+        ifscCode: true
       }
     });
-    
-    if (deliveries.length !== deliveryIds.length) {
+
+    if (!freelancer) {
       return NextResponse.json(
-        { message: 'One or more deliveries are invalid or already withdrawn' },
+        { message: 'Freelancer not found' },
+        { status: 404 }
+      );
+    }
+
+    // Check if freelancer has banking information
+    if (!freelancer.bankAccountNumber || !freelancer.bankName || !freelancer.ifscCode) {
+      return NextResponse.json(
+        { message: 'Please add your banking information in your profile before requesting withdrawal' },
         { status: 400 }
       );
     }
-    
-    // Calculate total amount from these deliveries
-    const totalAmount = deliveries.reduce((sum, delivery) => sum + delivery.cost, 0);
-    
-    // Verify amount matches
-    if (Math.abs(totalAmount - amount) > 0.01) { // Allow for tiny floating point differences
+
+    // Verify amount <= wallet balance
+    if (amount > freelancer.walletBalance) {
       return NextResponse.json(
-        { message: 'Requested amount does not match selected deliveries' },
+        { message: `Insufficient wallet balance. Available: ₹${freelancer.walletBalance}` },
         { status: 400 }
       );
     }
-    
-    // Create a new withdrawal record
+
+    const balanceBefore = freelancer.walletBalance;
+    const balanceAfter = balanceBefore - amount;
+
+    // Create withdrawal record with pending status
     const withdrawal = await db.withdrawal.create({
       data: {
         amount,
         status: 'pending',
         freelancerId,
-        deliveryIds: deliveryIds  // This assumes you're using a String[] in the schema
+        walletBalanceBefore: balanceBefore,
+        walletBalanceAfter: balanceAfter
       }
     });
-    
-    // Update all selected deliveries to have withdrawStatus = "yes"
-    await db.delivery.updateMany({
-      where: {
-        id: { in: deliveryIds }
-      },
+
+    // Deduct amount from wallet (hold in pending)
+    await db.freelancer.update({
+      where: { id: freelancerId },
       data: {
-        withdrawStatus: 'yes'
+        walletBalance: balanceAfter
       }
     });
-    
+
+    // Create wallet transaction record (pending)
+    await db.walletTransaction.create({
+      data: {
+        freelancerId,
+        type: 'DEBIT',
+        amount,
+        description: `Withdrawal request #${withdrawal.id.slice(-8)}`,
+        referenceId: withdrawal.id,
+        balanceBefore,
+        balanceAfter,
+        status: 'pending'
+      }
+    });
+
     return NextResponse.json({
       success: true,
-      withdrawal
+      withdrawal,
+      message: 'Withdrawal request submitted successfully'
     });
   } catch (error) {
     console.error('Error processing withdrawal request:', error);

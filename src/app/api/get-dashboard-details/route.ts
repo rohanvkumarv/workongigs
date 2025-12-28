@@ -252,7 +252,7 @@ export async function GET(request: Request) {
         startDate.setDate(startDate.getDate() - 30);
     }
 
-    // 1. Fetch freelancer details
+    // 1. Fetch freelancer details with wallet info
     const freelancer = await db.freelancer.findUnique({
       where: { id: freelancerId },
       select: {
@@ -261,6 +261,9 @@ export async function GET(request: Request) {
         email: true,
         mobile: true,
         profileImage: true,
+        walletBalance: true,
+        totalEarnings: true,
+        totalWithdrawn: true,
       },
     });
 
@@ -407,15 +410,19 @@ export async function GET(request: Request) {
     // 9. Get total clients count
     const totalClients = await db.client.count({ where: { freelancerId } });
 
-    // 10. Check for pending withdrawals
-    const pendingWithdrawals = await db.withdrawal.count({
+    // 10. Get pending withdrawals amount
+    const pendingWithdrawalsData = await db.withdrawal.aggregate({
       where: {
         freelancerId,
         status: 'pending'
-      }
+      },
+      _sum: {
+        amount: true
+      },
+      _count: true
     });
 
-    // 11. Construct response data
+    // 11. Construct response data with wallet stats
     const response = {
       freelancer: {
         id: freelancer.id,
@@ -423,12 +430,25 @@ export async function GET(request: Request) {
         email: freelancer.email,
         profileImage: freelancer.profileImage,
         mobile: freelancer.mobile?.toString(),
+        walletBalance: freelancer.walletBalance,
+        totalEarnings: freelancer.totalEarnings,
+        totalWithdrawn: freelancer.totalWithdrawn,
       },
       stats: {
+        // Wallet stats (new system)
+        walletBalance: freelancer.walletBalance,
+        totalEarnings: freelancer.totalEarnings,
+        totalWithdrawn: freelancer.totalWithdrawn,
+        pendingWithdrawalsAmount: pendingWithdrawalsData._sum.amount || 0,
+        pendingWithdrawalsCount: pendingWithdrawalsData._count || 0,
+
+        // Legacy stats (keep for backwards compatibility)
         totalPaidAmount,
         amountOnHold,
         availableToWithdraw,
-        pendingWithdrawals,
+        pendingWithdrawals: pendingWithdrawalsData._count || 0,
+
+        // Client and delivery stats
         totalClients,
         activeClientsWithUnpaidDeliveries: clientsWithUnpaidDeliveries.length,
         totalDeliveries,

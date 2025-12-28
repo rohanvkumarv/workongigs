@@ -13,8 +13,8 @@ export async function GET(request: Request) {
       whereCondition.status = status;
     }
     
-    // Get all withdrawals with filtering
-    const withdrawalsData = await db.withdrawal.findMany({
+    // Get all withdrawals with filtering, including banking info
+    const withdrawals = await db.withdrawal.findMany({
       where: whereCondition,
       orderBy: [
         { status: 'asc' }, // Pending first
@@ -26,43 +26,31 @@ export async function GET(request: Request) {
             id: true,
             name: true,
             email: true,
-            profileImage: true
+            profileImage: true,
+            mobile: true,
+            bankAccountNumber: true,
+            bankName: true,
+            ifscCode: true,
+            bankEmail: true,
+            walletBalance: true,
+            totalEarnings: true,
+            totalWithdrawn: true
           }
         }
       }
     });
-    
-    // For each withdrawal, fetch the associated deliveries
-    const withdrawals = await Promise.all(
-      withdrawalsData.map(async (withdrawal) => {
-        // Get the deliveries using the IDs stored in the array
-        const deliveries = await db.delivery.findMany({
-          where: {
-            id: { in: withdrawal.deliveryIds }
-          },
-          select: {
-            id: true,
-            name: true,
-            cost: true,
-            createdAt: true,
-            client: {
-              select: {
-                id: true,
-                name: true
-              }
-            }
-          }
-        });
-        
-        return {
-          ...withdrawal,
-          deliveries
-        };
-      })
-    );
-    
+
+    // Convert BigInt mobile to string
+    const withdrawalsWithFormattedData = withdrawals.map(w => ({
+      ...w,
+      freelancer: {
+        ...w.freelancer,
+        mobile: w.freelancer.mobile?.toString()
+      }
+    }));
+
     return NextResponse.json({
-      withdrawals
+      withdrawals: withdrawalsWithFormattedData
     });
   } catch (error) {
     console.error('Error fetching admin withdrawals:', error);
