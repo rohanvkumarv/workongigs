@@ -2317,9 +2317,11 @@ const DashboardContent = () => {
 
   const { freelancer, stats, unpaidDeliveries, recentDeliveries } = data;
 
-  // Calculate earnings amounts after platform fee deduction
-  const availableToWithdraw = getDeductedAmount(stats.availableToWithdraw);
-  const totalEarned = getDeductedAmount(stats.totalPaidAmount);
+  // Use wallet stats from the new system
+  const walletBalance = stats.walletBalance || 0;
+  const totalEarnings = stats.totalEarnings || 0;
+  const totalWithdrawn = stats.totalWithdrawn || 0;
+  const pendingWithdrawals = stats.pendingWithdrawalsAmount || 0;
 
   const handleQuickDeliverySuccess = async () => {
     try {
@@ -2399,12 +2401,13 @@ const DashboardContent = () => {
               {/* Mobile View: Card Layout */}
               <div className="p-4 sm:hidden">
                 {recentDeliveries.map((delivery) => (
-                  <DeliveryCard 
-                    key={delivery.id}
-                    delivery={delivery}
-                    onSendReminder={sendSingleReminder}
-                    onCopyPreviewLink={copyPreviewLink}
-                  />
+                  <div key={delivery.id} onClick={() => window.location.href = `/freelancer/clientss/${delivery.client.id}`} className="cursor-pointer">
+                    <DeliveryCard
+                      delivery={delivery}
+                      onSendReminder={sendSingleReminder}
+                      onCopyPreviewLink={copyPreviewLink}
+                    />
+                  </div>
                 ))}
               </div>
               
@@ -2425,7 +2428,11 @@ const DashboardContent = () => {
                     {recentDeliveries.map((delivery) => {
                       const displayAmount = getDisplayAmount(delivery.amount, delivery.status === 'Paid');
                       return (
-                        <tr key={delivery.id} className="hover:bg-gray-50">
+                        <tr
+                          key={delivery.id}
+                          className="hover:bg-gray-50 cursor-pointer"
+                          onClick={() => window.location.href = `/freelancer/clientss/${delivery.client.id}`}
+                        >
                           <td className="px-6 py-4">{delivery.name}</td>
                           <td className="px-6 py-4">{delivery.client.name}</td>
                           <td className="px-6 py-4">₹{displayAmount}</td>
@@ -2434,25 +2441,31 @@ const DashboardContent = () => {
                           </td>
                           <td className="px-6 py-4">
                             <span className={`px-2 py-1 rounded-full text-xs ${
-                              delivery.status === 'Paid' 
-                                ? 'bg-green-100 text-green-800' 
+                              delivery.status === 'Paid'
+                                ? 'bg-green-100 text-green-800'
                                 : 'bg-yellow-100 text-yellow-800'
                             }`}>
                               {delivery.status}
                             </span>
                           </td>
-                          <td className="px-6 py-4">
+                          <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
                             {delivery.status === 'Not Paid' && (
                               <div className="flex space-x-2">
                                 <button
-                                  onClick={() => sendSingleReminder(delivery.id, delivery.client.id)}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    sendSingleReminder(delivery.id, delivery.client.id);
+                                  }}
                                   className="text-blue-500 hover:text-blue-600 transition-colors"
                                   title="Send reminder"
                                 >
                                   <Send className="w-4 h-4" />
                                 </button>
                                 <button
-                                  onClick={() => copyPreviewLink(delivery.client.id, delivery.id)}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    copyPreviewLink(delivery.client.id, delivery.id);
+                                  }}
                                   className="text-gray-500 hover:text-gray-700 transition-colors"
                                   title="Copy preview link"
                                 >
@@ -2475,25 +2488,35 @@ const DashboardContent = () => {
 
           {/* Right Sidebar - 30% */}
           <div className="lg:w-[30%] space-y-5">
-            {/* Earnings Card (First) */}
-            <div className="bg-black rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg">
-              <h3 className="text-sm font-medium text-gray-300 mb-4">Earnings</h3>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-400">Available to withdraw</span>
-                  <span className="text-white font-bold">₹{availableToWithdraw}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-400">Total amount earned</span>
-                  <span className="text-white font-bold">₹{totalEarned}</span>
-                </div>
-                <button 
-                  onClick={() => setShowWithdrawModal(true)}
-                  className="w-full bg-white text-black rounded-lg py-2 font-medium hover:bg-gray-100 transition-colors"
-                >
-                  Withdraw ₹{availableToWithdraw}
-                </button>
+            {/* Wallet Card (First) */}
+            <div className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg">
+              <h3 className="text-sm font-medium text-blue-100 mb-1">My Wallet</h3>
+              <div className="mb-4">
+                <p className="text-white text-3xl font-bold">₹{walletBalance.toFixed(2)}</p>
+                <p className="text-blue-100 text-xs mt-1">Available Balance</p>
               </div>
+              <div className="space-y-2 mb-4 pb-4 border-b border-blue-500">
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-blue-100">Total Earned</span>
+                  <span className="text-white font-semibold">₹{totalEarnings.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-blue-100">Total Withdrawn</span>
+                  <span className="text-white font-semibold">₹{totalWithdrawn.toFixed(2)}</span>
+                </div>
+                {pendingWithdrawals > 0 && (
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-yellow-200">Pending</span>
+                    <span className="text-yellow-100 font-semibold">₹{pendingWithdrawals.toFixed(2)}</span>
+                  </div>
+                )}
+              </div>
+              <button
+                onClick={() => setShowWithdrawModal(true)}
+                className="w-full bg-white text-blue-700 rounded-lg py-2.5 font-semibold hover:bg-blue-50 transition-colors"
+              >
+                Withdraw Funds
+              </button>
             </div>
             
             {/* Support and Contact Card (Second) */}

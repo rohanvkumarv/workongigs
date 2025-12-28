@@ -33,7 +33,10 @@ const QuickDeliveryModal = ({ isOpen, onClose, freelancerId, onSuccess }) => {
     name: '',
     desc: '',
     cost: '',
-    PaymentStatus: 'Not Paid'
+    PaymentStatus: 'Not Paid',
+    allowDownloadWithoutPayment: false,
+    includePreviousAmount: false,
+    bundledDeliveryIds: []
   });
   
   const [newClientForm, setNewClientForm] = useState({
@@ -553,6 +556,24 @@ const QuickDeliveryModal = ({ isOpen, onClose, freelancerId, onSuccess }) => {
                           className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors resize-none"
                         />
                       </div>
+
+                      {/* New Delivery Options */}
+                      <div className="space-y-3 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                        <p className="text-sm font-medium text-blue-900">Delivery Options</p>
+                        <label className="flex items-start space-x-3 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={deliveryForm.allowDownloadWithoutPayment}
+                            onChange={(e) => setDeliveryForm({...deliveryForm, allowDownloadWithoutPayment: e.target.checked})}
+                            className="mt-1 rounded text-blue-600 focus:ring-blue-500"
+                          />
+                          <div>
+                            <p className="text-sm font-medium text-gray-900">Allow download without payment</p>
+                            <p className="text-xs text-gray-600">Client can download files before paying</p>
+                          </div>
+                        </label>
+                      </div>
+
                       <div className="p-6 border-t border-gray-200 bg-gray-50 flex flex-col sm:flex-row justify-end gap-3">
               <button
                 onClick={handleClose}
